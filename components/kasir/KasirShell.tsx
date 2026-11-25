@@ -77,22 +77,24 @@ export function KasirShell({ storeName, children }: KasirShellProps) {
           collapsed ? "w-20" : "w-60"
         )}
       >
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={() => setCollapsed((prev) => !prev)}
-          aria-label={collapsed ? "Buka sidebar" : "Tutup sidebar"}
-          aria-expanded={!collapsed}
-          title={collapsed ? "Buka sidebar" : "Tutup sidebar"}
-          className="absolute top-1/2 -right-5 z-20 size-11 -translate-y-1/2 rounded-full border-sidebar-border bg-card text-sidebar-foreground shadow-sm hover:bg-sidebar-accent"
-        >
-          {collapsed ? (
-            <PanelLeftOpen className="size-5" aria-hidden="true" />
-          ) : (
-            <PanelLeftClose className="size-5" aria-hidden="true" />
-          )}
-        </Button>
+        <div className="absolute top-1/2 -right-5 z-20 -translate-y-1/2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => setCollapsed((prev) => !prev)}
+            aria-label={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+            aria-expanded={!collapsed}
+            title={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+            className="size-11 rounded-full border-sidebar-border bg-card text-sidebar-foreground shadow-sm transition-colors hover:bg-sidebar-accent active:translate-y-0!"
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="size-5" aria-hidden="true" />
+            ) : (
+              <PanelLeftClose className="size-5" aria-hidden="true" />
+            )}
+          </Button>
+        </div>
 
         <div className="space-y-4 overflow-hidden">
           <div className="flex h-12 items-center">

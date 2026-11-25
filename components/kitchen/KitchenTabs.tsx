@@ -19,16 +19,16 @@ export function KitchenTabs({
       value={tab}
       onValueChange={(value) => onTabChange(value as KitchenTab)}
     >
-      <TabsList className="grid w-full max-w-sm grid-cols-2 rounded-xl bg-muted p-1 group-data-horizontal/tabs:h-12">
+      <TabsList className="inline-grid w-full max-w-sm grid-cols-2 gap-2 rounded-xl bg-muted p-1.5 group-data-horizontal/tabs:h-13">
         <TabsTrigger
           value="active"
-          className="h-10 rounded-lg text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+          className="h-10 rounded-lg px-5 text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
         >
           Aktif ({activeCount})
         </TabsTrigger>
         <TabsTrigger
           value="done"
-          className="h-10 rounded-lg text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+          className="h-10 rounded-lg px-5 text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
         >
           Selesai
         </TabsTrigger>
