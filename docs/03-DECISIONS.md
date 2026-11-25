@@ -64,6 +64,9 @@ Keputusan di sini **sudah disepakati user** dan **mengikat**. Untuk mengubahnya,
 - **Konteks:** tidak ada status "belum bayar" yang diminta.
 - **Keputusan:** Place Order = pembayaran dicatat. Tidak ada alur "bayar nanti". `[perlu konfirmasi user, lihat A10]`
 
+### D16 — Aset logo & foto menu awal dari `public/`
+- **Keputusan:** Logo memakai `/Logo_cemal_cemul.png` dan 4 menu awal memakai `/Mix_Platter.png`, `/French_Toast.png`, `/Single_cemul.png`, `/Couple_Cemul.png`. Menu tambahan tetap dapat mengunggah gambar ke bucket `menu-images`. _(Menggantikan asumsi A3 dan A13.)_
+
 ---
 
 ## 2. Asumsi yang belum dikonfirmasi `[ASUMSI]`
@@ -72,7 +75,6 @@ Keputusan di sini **sudah disepakati user** dan **mengikat**. Untuk mengubahnya,
 |---|---|---|---|
 | A1 | Hex warna di `06` adalah estimasi dari gambar poster | Warna kurang akurat | Minta hex asli |
 | A2 | French Toast dan Single Cemul memilih **1** varian | Aturan varian salah | Tanya user |
-| A3 | Satu gambar per menu; awalnya placeholder | Tampilan kurang menarik | Tanya user / minta foto |
 | A4 | Font judul playful (Lilita One / Baloo 2) | Gaya berbeda | Tanya user |
 | A5 | IDR tanpa desimal | — | Pasti benar |
 | A6 | Zona waktu WIB | Waktu tampil salah | Tanya user |
@@ -82,7 +84,6 @@ Keputusan di sini **sudah disepakati user** dan **mengikat**. Untuk mengubahnya,
 | A10 | Pesanan sudah dibayar saat dibuat (tidak ada "belum bayar") | Alur kasir restoran bisa beda | Tanya user |
 | A11 | Nomor pesanan terus bertambah (tidak reset harian) | Nomor makin panjang | Tanya user |
 | A12 | Realtime memakai Postgres Changes + SELECT anon pada `orders`/`order_items` | Data pesanan terbaca siapa pun yang punya anon key | Lihat opsi B di `04` dan keputusan user |
-| A13 | Logo belum tersedia; header pakai teks | — | Minta file logo |
 
 Ketika sebuah asumsi dijawab user, **pindahkan** ke bagian "Keputusan final" dengan ID baru dan hapus dari tabel ini.
 
@@ -121,4 +122,3 @@ Ketika sebuah asumsi dijawab user, **pindahkan** ke bagian "Keputusan final" den
 7. Apakah ada kasus "bayar nanti" (belum dibayar saat pesan)? (A10)
 8. Apakah perlu pembatalan pesanan? (OOS-12)
 9. Data pesanan boleh terbaca lewat anon key, atau pakai opsi Broadcast yang lebih tertutup? (A12)
-10. Logo/maskot dalam file PNG/SVG? (A13)

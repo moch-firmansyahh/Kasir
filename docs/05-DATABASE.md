@@ -149,14 +149,14 @@ create trigger orders_status_ts before update on orders
 ```sql
 insert into categories (name, sort_order) values ('Makanan', 1), ('Minuman', 2);
 
-insert into menu_items (category_id, name, price, variant_label, variant_pick, sort_order)
-select c.id, v.name, v.price, 'Varian', v.pick, v.ord
+insert into menu_items (category_id, name, price, image_url, variant_label, variant_pick, sort_order)
+select c.id, v.name, v.price, v.image_url, 'Varian', v.pick, v.ord
 from (values
-  ('Makanan','Mix Platter', 15000, 3, 1),
-  ('Makanan','French Toast', 13000, 1, 2),   -- [ASUMSI A2]
-  ('Minuman','Single Cemul', 9000, 1, 3),    -- [ASUMSI A2]
-  ('Minuman','Couple Cemul', 14000, 2, 4)
-) as v(cat, name, price, pick, ord)
+  ('Makanan','Mix Platter', 15000, '/Mix_Platter.png', 3, 1),
+  ('Makanan','French Toast', 13000, '/French_Toast.png', 1, 2),   -- [ASUMSI A2]
+  ('Minuman','Single Cemul', 9000, '/Single_cemul.png', 1, 3),    -- [ASUMSI A2]
+  ('Minuman','Couple Cemul', 14000, '/Couple_Cemul.png', 2, 4)
+) as v(cat, name, price, image_url, pick, ord)
 join categories c on c.name = v.cat;
 
 insert into menu_variants (menu_item_id, name, sort_order)
@@ -246,8 +246,15 @@ alter table settings      enable row level security;
 alter table orders        enable row level security;
 alter table order_items   enable row level security;
 
--- Service role melewati RLS otomatis.
+-- Service role melewati RLS otomatis, namun tetap membutuhkan GRANT schema/table/sequence/function pada beberapa project Supabase.
+grant usage on schema public to service_role;
+grant all privileges on all tables in schema public to service_role;
+grant all privileges on all sequences in schema public to service_role;
+grant execute on all functions in schema public to service_role;
+
 -- Anon: hanya SELECT pada orders (dibutuhkan agar Realtime Postgres Changes dapat berjalan).
+grant usage on schema public to anon;
+grant select on orders, order_items to anon;
 create policy "anon read orders" on orders
   for select to anon using (true);
 create policy "anon read order_items" on order_items
