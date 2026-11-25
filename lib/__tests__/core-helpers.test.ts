@@ -65,14 +65,14 @@ describe("canTransition", () => {
 });
 
 describe("calculateScaledDimensions", () => {
-  it("scales down longest edge to 1280px preserving aspect ratio", () => {
-    expect(calculateScaledDimensions(2560, 1920)).toEqual({
-      width: 1280,
-      height: 960,
-    });
-    expect(calculateScaledDimensions(800, 600)).toEqual({
+  it("scales down longest edge to 800px preserving aspect ratio", () => {
+    expect(calculateScaledDimensions(1600, 1200)).toEqual({
       width: 800,
       height: 600,
+    });
+    expect(calculateScaledDimensions(600, 450)).toEqual({
+      width: 600,
+      height: 450,
     });
   });
 });

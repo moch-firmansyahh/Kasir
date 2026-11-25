@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import type { useCart } from "@/hooks/useCart";
 
@@ -168,8 +167,8 @@ export function Cart({
           />
         </div>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-3">
-          <ScrollArea className="min-h-0 flex-1 pr-2">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
             <div className="space-y-3 pb-2">
               <OrderMeta
                 customerName={cart.customerName}
@@ -219,39 +218,41 @@ export function Cart({
                 onChange={onProofFileChange}
               />
             </div>
-          </ScrollArea>
+          </div>
 
-          {submitError ? (
-            <p
-              role="alert"
-              className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive"
+          <div className="shrink-0 space-y-2 border-t border-border/60 pt-2">
+            {submitError ? (
+              <p
+                role="alert"
+                className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive"
+              >
+                {submitError}
+              </p>
+            ) : null}
+
+            {!hasCustomerName ? (
+              <p className="text-xs font-medium text-muted-foreground">
+                Isi nama customer terlebih dahulu untuk membuat pesanan.
+              </p>
+            ) : null}
+
+            <Button
+              type="button"
+              size="lg"
+              disabled={!canSubmit}
+              onClick={onSubmitOrder}
+              className="h-14 w-full shrink-0 gap-2 rounded-xl text-base font-extrabold shadow-sm"
             >
-              {submitError}
-            </p>
-          ) : null}
-
-          {!hasCustomerName ? (
-            <p className="text-xs font-medium text-muted-foreground">
-              Isi nama customer terlebih dahulu untuk membuat pesanan.
-            </p>
-          ) : null}
-
-          <Button
-            type="button"
-            size="lg"
-            disabled={!canSubmit}
-            onClick={onSubmitOrder}
-            className="h-14 w-full shrink-0 gap-2 rounded-xl text-base font-extrabold shadow-sm"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="size-5 animate-spin" aria-hidden="true" />
-                <span>Mengirim pesanan...</span>
-              </>
-            ) : (
-              <span>Buat Pesanan</span>
-            )}
-          </Button>
+              {submitting ? (
+                <>
+                  <Loader2 className="size-5 animate-spin" aria-hidden="true" />
+                  <span>Mengirim pesanan...</span>
+                </>
+              ) : (
+                <span>Buat Pesanan</span>
+              )}
+            </Button>
+          </div>
         </div>
       )}
     </div>

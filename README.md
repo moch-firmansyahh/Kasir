@@ -5,7 +5,7 @@ Aplikasi kasir (POS) dan layar dapur **fullstack Next.js** untuk usaha kuliner *
 ## Fitur Utama
 
 - **Pilih Role (`/`)**: Memilih tampilan **Kasir** atau **Dapur** tanpa login, tersimpan di cookie `pos_role`.
-- **Kasir — POS (`/kasir`)**: Katalog menu, pencarian, filter kategori, dialog varian (`Pilih N` dengan pengulangan varian diizinkan), keranjang Zustand, catatan item & pesanan, diskon (`%` / `Rp`), pajak global, metode bayar (`Tunai` + hitung kembalian, `QRIS`, `Transfer`), foto bukti bayar opsional terkompresi, dan penghitungan ulang + snapshot harga di server.
+- **Kasir — POS (`/kasir`)**: Katalog menu (dengan cache lokal untuk sinyal lemah), pencarian, filter kategori, dialog varian (`Pilih N` dengan pengulangan varian diizinkan), keranjang Zustand persisten (`localStorage`), antrean pesanan offline (`IndexedDB` + auto-sync saat online) serta dukungan PWA Service Worker, catatan item & pesanan, diskon (`%` / `Rp`), pajak global, metode bayar (`Tunai` + hitung kembalian, `QRIS`, `Transfer`), foto bukti bayar opsional (`Dari File` / `Foto Langsung`, terkompresi ringan), dan penghitungan ulang + snapshot harga di server.
 - **Kasir — Kelola Menu (`/kasir/menu`)**: Tambah, edit, hapus, aktif/nonaktifkan menu, kelola varian & kategori, serta upload gambar menu.
 - **Kasir — Riwayat (`/kasir/riwayat`)**: Daftar transaksi per tanggal (`Hari ini`, `Kemarin`, `Rentang`), ringkasan penjualan, detail item, status dapur realtime, serta lihat/tambah/ganti foto bukti bayar.
 - **Kasir — Pengaturan (`/kasir/pengaturan`)**: Ubah nama toko dan persentase pajak global.

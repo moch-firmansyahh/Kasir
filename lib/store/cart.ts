@@ -1,6 +1,13 @@
 import { create } from "zustand";
+import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import type { Discount } from "@/lib/pricing";
 import type { DiscountType, PaymentMethod } from "@/types/db";
+
+const noopStorage: StateStorage = {
+  getItem: () => null,
+  setItem: () => undefined,
+  removeItem: () => undefined,
+};
 
 export type CartLine = {
   key: string;
@@ -104,7 +111,9 @@ type CartState = {
   clearInvalidMenuIds: () => void;
 };
 
-export const useCartStore = create<CartState>((set) => ({
+export const useCartStore = create<CartState>()(
+  persist(
+    (set) => ({
   lines: [],
   customerName: "",
   orderNote: "",
@@ -243,4 +252,21 @@ export const useCartStore = create<CartState>((set) => ({
     })),
 
   clearInvalidMenuIds: () => set({ invalidMenuIds: [] }),
-}));
+    }),
+    {
+      name: "cemal-cemul-cart",
+      storage: createJSONStorage(() =>
+        typeof window !== "undefined" ? window.localStorage : noopStorage
+      ),
+      partialize: (state) => ({
+        lines: state.lines,
+        customerName: state.customerName,
+        orderNote: state.orderNote,
+        discountType: state.discountType,
+        discountInput: state.discountInput,
+        paymentMethod: state.paymentMethod,
+        cashReceivedInput: state.cashReceivedInput,
+      }),
+    }
+  )
+);

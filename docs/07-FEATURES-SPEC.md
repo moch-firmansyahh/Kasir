@@ -80,7 +80,7 @@ Gunakan teks berikut agar konsisten. Boleh diubah **hanya** bila user meminta.
 - Baris: nama, varian, catatan, harga baris (`price × qty`), stepper, hapus.
 - Stepper turun dari 1 → hapus baris (tanpa konfirmasi untuk satu baris; ada tombol "Kosongkan" dengan `AlertDialog`).
 - Penggabungan baris: key = `menuItemId + varian terurut + catatan`.
-- Keranjang disimpan di memori (Zustand) selama sesi tab; **hilang saat refresh** `[ASUMSI]`.
+- Keranjang disimpan di `localStorage` (`persist`) sehingga tetap aman saat halaman di-refresh di kondisi sinyal lemah.
 
 ### 2.5 Data pesanan
 - Nama customer: **wajib**, maks 60 karakter.
@@ -110,19 +110,19 @@ Semua integer. Pembulatan `Math.round`. Contoh: subtotal 38.000, diskon 10% = 3.
 
 ### 2.8 Foto bukti bayar (FR-POS-14)
 - Menyediakan dua pilihan: **Dari File** (`<input type="file" accept="image/*">`) dan **Foto Langsung** (kamera live `getUserMedia` di laptop/desktop atau kamera native `capture="environment"` di HP/tablet).
-- Setelah ambil: kompres di client (maks sisi 1280px, JPEG ≈0.7), tampil pratinjau, tombol Ganti (Dari File / Foto Langsung) & Hapus.
+- Setelah ambil: kompres di client (maks sisi 800px, JPEG ≈0.6), tampil pratinjau, tombol Ganti (Dari File / Foto Langsung) & Hapus.
 - Opsional: tanpa foto tetap bisa lanjut.
 - Bila kamera tidak tersedia/ditolak: tersedia tombol fallback ke pilih file.
 
-### 2.9 Buat Pesanan
+### 2.9 Buat Pesanan & Antrean Offline
 Urutan:
 1. Validasi client → tombol aktif/nonaktif.
-2. Kirim `POST /api/orders`.
-3. Sukses → bila ada foto, kirim `POST /api/orders/[id]/proof`.
-4. Kosongkan keranjang & form; toast sukses; fokus kembali ke pencarian.
-5. Upload foto gagal → toast peringatan "Pesanan tersimpan, tetapi foto gagal diunggah. Coba lagi dari Riwayat." (H12).
-6. Order gagal → pesan error; **keranjang tetap** (FR-POS-16).
+2. Kirim `POST /api/orders`. Bila perangkat sedang offline atau terjadi kegagalan jaringan/`502–504`, pesanan (beserta foto opsional) otomatis disimpan ke antrean **IndexedDB** (`OfflineQueueBar`) dan keranjang dikosongkan agar kasir tetap bisa melayani pembeli berikutnya.
+3. Saat koneksi kembali (`online` event atau tombol **Kirim Sekarang**), antrean offline dikirim otomatis berurutan FIFO ke `POST /api/orders` + `POST /api/orders/[id]/proof`.
+4. Bila server menolak dengan `4xx` (validasi/menu tidak aktif) saat online, **keranjang tetap** (FR-POS-16) dan pesan error jelas tampil.
+5. Sukses → bila ada foto, kirim `POST /api/orders/[id]/proof`. Bila upload foto gagal → toast peringatan (H12).
 - Cegah klik ganda: tombol nonaktif + spinner selama proses; idempotensi sisi UI (satu request per klik).
+- Dukungan PWA Service Worker (`public/sw.js` + `app/manifest.ts`) & cache katalog menu (`localStorage`) menjaga halaman `/kasir` tetap dapat dibuka saat sinyal putus-nyambung.
 
 ### 2.10 Responsive
 - ≥1024px: panel pesanan tetap di kanan.

@@ -1,5 +1,5 @@
-export const MAX_IMAGE_SIDE_PX = 1280;
-export const JPEG_QUALITY = 0.7;
+export const MAX_IMAGE_SIDE_PX = 800;
+export const JPEG_QUALITY = 0.6;
 
 /**
  * Calculates target dimensions preserving aspect ratio within maxSide.

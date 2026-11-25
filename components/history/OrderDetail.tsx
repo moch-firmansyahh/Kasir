@@ -6,7 +6,6 @@ import { ProofViewer } from "@/components/history/ProofViewer";
 import { Money } from "@/components/shared/Money";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -88,8 +87,8 @@ export function OrderDetail({
         side={isMobile ? "bottom" : "right"}
         className={
           isMobile
-            ? "flex max-h-[88vh] flex-col rounded-t-2xl bg-background px-4 pt-6 pb-6"
-            : "flex w-full flex-col bg-background p-5 sm:max-w-md"
+            ? "flex h-[88dvh]! max-h-[88dvh]! flex-col overflow-hidden rounded-t-2xl bg-background px-4 pt-5 pb-5"
+            : "flex h-dvh! w-full flex-col overflow-hidden bg-background p-5 sm:max-w-md"
         }
       >
         <SheetHeader className="px-0 text-left">
@@ -122,7 +121,7 @@ export function OrderDetail({
             }}
           />
         ) : order ? (
-          <ScrollArea className="min-h-0 flex-1 pr-2">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
             <div className="space-y-4 pb-4">
               <div className="rounded-xl border border-border bg-card p-3.5 text-sm space-y-1">
                 <div className="flex justify-between gap-2">
@@ -217,7 +216,7 @@ export function OrderDetail({
                 }}
               />
             </div>
-          </ScrollArea>
+          </div>
         ) : null}
       </SheetContent>
     </Sheet>

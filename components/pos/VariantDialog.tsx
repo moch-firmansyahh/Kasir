@@ -274,8 +274,8 @@ export function VariantDialog({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={resetAndClose}>
-        <DrawerContent className="px-4 pb-6">
-          <DrawerHeader className="px-0 text-left">
+        <DrawerContent className="flex max-h-[90dvh] flex-col overflow-hidden px-4 pb-6">
+          <DrawerHeader className="shrink-0 px-0 text-left">
             <div className="flex items-baseline justify-between gap-2">
               <DrawerTitle className="font-display text-xl font-bold">
                 {item.name}
@@ -284,8 +284,10 @@ export function VariantDialog({
             </div>
             <DrawerDescription>{subtitle}</DrawerDescription>
           </DrawerHeader>
-          {body}
-          <DrawerFooter className="px-0 pt-4">{submitButton}</DrawerFooter>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+            {body}
+          </div>
+          <DrawerFooter className="shrink-0 px-0 pt-4">{submitButton}</DrawerFooter>
         </DrawerContent>
       </Drawer>
     );

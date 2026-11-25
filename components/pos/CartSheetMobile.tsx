@@ -112,8 +112,8 @@ export function CartSheetResponsive({
           side={isMobile ? "bottom" : "right"}
           className={
             isMobile
-              ? "flex max-h-[88vh] flex-col rounded-t-2xl bg-background px-4 pt-6 pb-6 lg:hidden"
-              : "flex w-full flex-col bg-background p-5 sm:max-w-md lg:hidden"
+              ? "flex h-[88dvh]! max-h-[88dvh]! flex-col overflow-hidden rounded-t-2xl bg-background px-4 pt-5 pb-5 lg:hidden"
+              : "flex h-dvh! w-full flex-col overflow-hidden bg-background p-5 sm:max-w-md lg:hidden"
           }
         >
           <SheetHeader className="sr-only">

@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import Link from "next/link";
 import { UtensilsCrossed } from "lucide-react";
 import { toast } from "sonner";
@@ -8,6 +15,7 @@ import { Cart, type PendingProofRetry } from "@/components/pos/Cart";
 import { CartSheetResponsive } from "@/components/pos/CartSheetMobile";
 import { CategoryTabs } from "@/components/pos/CategoryTabs";
 import { MenuCard } from "@/components/pos/MenuCard";
+import { OfflineQueueBar } from "@/components/pos/OfflineQueueBar";
 import { SearchBar } from "@/components/pos/SearchBar";
 import { VariantDialog } from "@/components/pos/VariantDialog";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -17,6 +25,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/useCart";
 import { API_ERROR_CODES } from "@/lib/api";
 import { formatRupiah } from "@/lib/format";
+import {
+  enqueueOrder,
+  isRetryableNetworkStatus,
+  listQueuedOrders,
+  removeQueuedOrder,
+  updateQueuedOrder,
+  type QueuedOrderRecord,
+} from "@/lib/offline/orderQueue";
+import { loadPosCache, savePosCache } from "@/lib/offline/posCache";
 import type {
   ApiResponse,
   CategoryDTO,
@@ -26,12 +43,30 @@ import type {
   SettingsDTO,
 } from "@/types/api";
 
+function subscribeOnlineStatus(callback: () => void) {
+  window.addEventListener("online", callback);
+  window.addEventListener("offline", callback);
+  return () => {
+    window.removeEventListener("online", callback);
+    window.removeEventListener("offline", callback);
+  };
+}
+
 export function PosWorkspace() {
+  const isOnline = useSyncExternalStore(
+    subscribeOnlineStatus,
+    () => navigator.onLine,
+    () => true
+  );
+
   const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const [items, setItems] = useState<MenuItemDTO[]>([]);
   const [taxPercent, setTaxPercent] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [queuedOrders, setQueuedOrders] = useState<QueuedOrderRecord[]>([]);
+  const [flushingQueue, setFlushingQueue] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | "all">(
@@ -48,6 +83,7 @@ export function PosWorkspace() {
   const [retryingProof, setRetryingProof] = useState(false);
 
   const submittingRef = useRef(false);
+  const flushingRef = useRef(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const cart = useCart(taxPercent);
 
@@ -67,7 +103,7 @@ export function PosWorkspace() {
       throw new Error(menuJson.error?.message ?? "Gagal memuat menu");
     }
 
-    return {
+    const nextData = {
       categories: menuJson.data.categories,
       items: menuJson.data.items,
       taxPercent:
@@ -75,7 +111,133 @@ export function PosWorkspace() {
           ? settingsJson.data.taxPercent
           : 0,
     };
+    savePosCache(nextData);
+    return nextData;
   }, []);
+
+  const refreshQueueState = useCallback(async () => {
+    const all = await listQueuedOrders();
+    setQueuedOrders(all);
+    return all;
+  }, []);
+
+  const uploadProof = useCallback(
+    async (orderId: string, file: File): Promise<boolean> => {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch(`/api/orders/${orderId}/proof`, {
+          method: "POST",
+          body: formData,
+        });
+
+        const json = (await res.json()) as ApiResponse<{ paymentProofUrl: string }>;
+        return res.ok && !json.error;
+      } catch {
+        return false;
+      }
+    },
+    []
+  );
+
+  const syncQueuedRecord = useCallback(
+    async (record: QueuedOrderRecord): Promise<"sent" | "network_error" | "rejected"> => {
+      await updateQueuedOrder(record.localId, {
+        status: "syncing",
+        lastError: null,
+      });
+      await refreshQueueState();
+
+      try {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(record.payload),
+        });
+
+        if (isRetryableNetworkStatus(res.status)) {
+          await updateQueuedOrder(record.localId, {
+            status: "pending",
+            lastError: "Koneksi server masih belum stabil.",
+          });
+          await refreshQueueState();
+          return "network_error";
+        }
+
+        const json = (await res.json()) as ApiResponse<CreateOrderResult>;
+        if (!res.ok || json.error) {
+          const message =
+            json.error?.message ?? "Pesanan antrean ditolak oleh server.";
+          await updateQueuedOrder(record.localId, {
+            status: "error",
+            lastError: message,
+          });
+          await refreshQueueState();
+          return "rejected";
+        }
+
+        const created = json.data;
+        if (record.proofBlob) {
+          const file = new File(
+            [record.proofBlob],
+            record.proofFileName ?? "proof.jpg",
+            { type: record.proofBlob.type || "image/jpeg" }
+          );
+          const uploaded = await uploadProof(created.id, file);
+          if (!uploaded) {
+            toast.warning(
+              `Pesanan #${created.orderNo} (${record.customerName}) terkirim, tetapi foto bukti gagal diunggah. Unggah ulang dari Riwayat.`
+            );
+          }
+        }
+
+        await removeQueuedOrder(record.localId);
+        await refreshQueueState();
+        toast.success(
+          `Antrean offline #${created.orderNo} (${record.customerName}) dikirim ke dapur`
+        );
+        return "sent";
+      } catch {
+        await updateQueuedOrder(record.localId, {
+          status: "pending",
+          lastError: "Menunggu koneksi internet kembali stabil.",
+        });
+        await refreshQueueState();
+        return "network_error";
+      }
+    },
+    [refreshQueueState, uploadProof]
+  );
+
+  const flushOfflineQueue = useCallback(
+    async (includeErrors = false) => {
+      if (flushingRef.current) return;
+      if (typeof navigator !== "undefined" && !navigator.onLine) return;
+
+      const all = await listQueuedOrders();
+      const targets = all.filter((q) =>
+        includeErrors
+          ? q.status === "pending" || q.status === "error"
+          : q.status === "pending"
+      );
+      if (targets.length === 0) return;
+
+      flushingRef.current = true;
+      setFlushingQueue(true);
+      try {
+        for (const record of targets) {
+          const result = await syncQueuedRecord(record);
+          if (result === "network_error") break;
+        }
+      } finally {
+        flushingRef.current = false;
+        setFlushingQueue(false);
+        await refreshQueueState();
+      }
+    },
+    [refreshQueueState, syncQueuedRecord]
+  );
 
   const handleRetry = useCallback(async () => {
     setLoading(true);
@@ -86,7 +248,15 @@ export function PosWorkspace() {
       setItems(data.items);
       setTaxPercent(data.taxPercent);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal memuat menu");
+      const cached = loadPosCache();
+      if (cached) {
+        setCategories(cached.categories);
+        setItems(cached.items);
+        setTaxPercent(cached.taxPercent);
+        setError(null);
+      } else {
+        setError(err instanceof Error ? err.message : "Gagal memuat menu");
+      }
     } finally {
       setLoading(false);
     }
@@ -94,25 +264,65 @@ export function PosWorkspace() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchPosData()
-      .then((data) => {
+    let hasCachedData = false;
+
+    async function initializePos() {
+      await Promise.resolve();
+      if (cancelled) return;
+
+      const cached = loadPosCache();
+      if (cached) {
+        hasCachedData = true;
+        setCategories(cached.categories);
+        setItems(cached.items);
+        setTaxPercent(cached.taxPercent);
+        setLoading(false);
+      }
+
+      void listQueuedOrders().then((list) => {
+        if (!cancelled) setQueuedOrders(list);
+      });
+
+      try {
+        const data = await fetchPosData();
         if (cancelled) return;
         setCategories(data.categories);
         setItems(data.items);
         setTaxPercent(data.taxPercent);
-      })
-      .catch((err: unknown) => {
+        setError(null);
+      } catch (err) {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Gagal memuat menu");
-      })
-      .finally(() => {
+        if (!hasCachedData) {
+          setError(err instanceof Error ? err.message : "Gagal memuat menu");
+        }
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    }
+
+    void initializePos();
 
     return () => {
       cancelled = true;
     };
   }, [fetchPosData]);
+
+  useEffect(() => {
+    if (!isOnline) return;
+    const timer = setTimeout(() => {
+      void flushOfflineQueue(false);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [isOnline, flushOfflineQueue]);
+
+  useEffect(() => {
+    const hasPending = queuedOrders.some((q) => q.status === "pending");
+    if (!hasPending || !isOnline) return;
+    const timer = setInterval(() => {
+      void flushOfflineQueue(false);
+    }, 30_000);
+    return () => clearInterval(timer);
+  }, [queuedOrders, isOnline, flushOfflineQueue]);
 
   const filteredItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -159,20 +369,43 @@ export function PosWorkspace() {
     toast.success(`${payload.item.name} ditambahkan`);
   }
 
-  async function uploadProof(orderId: string, file: File): Promise<boolean> {
+  async function queueCurrentOrder(notice: string) {
+    const customerName = cart.customerName.trim();
+    const previewTotal = cart.totals.total;
+    const itemCount = cart.itemCount;
+    const attachedProof = proofFile;
+
+    const payload: CreateOrderInput = {
+      customerName,
+      note: cart.orderNote.trim() || undefined,
+      paymentMethod: cart.paymentMethod!,
+      discount: cart.discount,
+      items: cart.lines.map((line) => ({
+        menuItemId: line.menuItemId,
+        qty: line.qty,
+        variants: line.variants,
+        note: line.note,
+      })),
+    };
+
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch(`/api/orders/${orderId}/proof`, {
-        method: "POST",
-        body: formData,
+      await enqueueOrder({
+        payload,
+        previewTotal,
+        itemCount,
+        proofFile: attachedProof,
       });
-
-      const json = (await res.json()) as ApiResponse<{ paymentProofUrl: string }>;
-      return res.ok && !json.error;
+      await refreshQueueState();
+      cart.clearCart();
+      setProofFile(null);
+      setRetryProof(null);
+      setMobileCartOpen(false);
+      toast.warning(notice);
+      searchInputRef.current?.focus();
     } catch {
-      return false;
+      const message = "Koneksi terputus dan antrean lokal gagal menyimpan.";
+      setSubmitError(message);
+      toast.error(message);
     }
   }
 
@@ -192,6 +425,18 @@ export function PosWorkspace() {
     setSubmitting(true);
     setSubmitError(null);
     cart.clearInvalidMenuIds();
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      try {
+        await queueCurrentOrder(
+          `Mode offline: Pesanan ${customerName} masuk antrean & akan dikirim saat online.`
+        );
+      } finally {
+        submittingRef.current = false;
+        setSubmitting(false);
+      }
+      return;
+    }
 
     const previewTotal = cart.totals.total;
     const attachedProof = proofFile;
@@ -215,6 +460,13 @@ export function PosWorkspace() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      if (isRetryableNetworkStatus(res.status)) {
+        await queueCurrentOrder(
+          `Koneksi tidak stabil (${res.status}). Pesanan ${customerName} disimpan ke antrean offline.`
+        );
+        return;
+      }
 
       const json = (await res.json()) as ApiResponse<CreateOrderResult>;
 
@@ -271,13 +523,39 @@ export function PosWorkspace() {
       toast.success(`Pesanan #${created.orderNo} dikirim ke dapur`);
       searchInputRef.current?.focus();
     } catch {
-      const message = "Pesanan gagal dibuat. Coba lagi.";
-      setSubmitError(message);
-      toast.error(message);
+      await queueCurrentOrder(
+        `Sinyal terputus. Pesanan ${customerName} disimpan di antrean offline.`
+      );
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
     }
+  }
+
+  async function handleRetrySingleQueue(localId: string) {
+    if (flushingRef.current) return;
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      toast.error("Perangkat masih offline.");
+      return;
+    }
+    const target = queuedOrders.find((q) => q.localId === localId);
+    if (!target) return;
+
+    flushingRef.current = true;
+    setFlushingQueue(true);
+    try {
+      await syncQueuedRecord(target);
+    } finally {
+      flushingRef.current = false;
+      setFlushingQueue(false);
+      await refreshQueueState();
+    }
+  }
+
+  async function handleRemoveSingleQueue(localId: string) {
+    await removeQueuedOrder(localId);
+    await refreshQueueState();
+    toast.success("Antrean pesanan dihapus.");
   }
 
   async function handleRetryProof() {
@@ -303,6 +581,14 @@ export function PosWorkspace() {
       {/* Menu Catalog Area */}
       <section className="flex-1 min-w-0 space-y-4 p-4 pb-36 sm:p-6 sm:pb-24 lg:pb-6">
         <div className="space-y-3">
+          <OfflineQueueBar
+            isOnline={isOnline}
+            queuedOrders={queuedOrders}
+            flushing={flushingQueue}
+            onFlush={(includeErrors) => void flushOfflineQueue(includeErrors)}
+            onRetryOne={(id) => void handleRetrySingleQueue(id)}
+            onRemoveOne={(id) => void handleRemoveSingleQueue(id)}
+          />
           <SearchBar
             ref={searchInputRef}
             value={searchQuery}
