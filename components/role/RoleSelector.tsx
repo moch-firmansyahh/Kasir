@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowRight, ChefHat, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,18 +43,13 @@ const ROLE_CARDS: {
 ];
 
 export function RoleSelector({ savedRole }: RoleSelectorProps) {
-  const router = useRouter();
   const [navigatingRole, setNavigatingRole] = useState<PosRole | null>(null);
-
-  useEffect(() => {
-    router.prefetch("/kasir");
-    router.prefetch("/dapur");
-  }, [router]);
 
   function handleSelect(role: PosRole) {
     setNavigatingRole(role);
     setClientRoleCookie(role);
-    router.push(getRoleHomePath(role));
+    // Full navigation ensures fresh pos_role cookie reaches server RoleGuard without stale Router Cache redirects
+    window.location.assign(getRoleHomePath(role));
   }
 
   return (
@@ -67,7 +61,7 @@ export function RoleSelector({ savedRole }: RoleSelectorProps) {
             size="lg"
             className="min-h-12 gap-2 rounded-2xl px-6 text-base font-bold shadow-sm"
           >
-            <Link href={getRoleHomePath(savedRole)}>
+            <Link href={getRoleHomePath(savedRole)} prefetch={false}>
               <span>Lanjut sebagai {getRoleLabel(savedRole)}</span>
               <ArrowRight className="size-5" aria-hidden="true" />
             </Link>

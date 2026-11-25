@@ -25,7 +25,7 @@ export function RoleSwitcher({ compact = false, className }: RoleSwitcherProps) 
         className
       )}
     >
-      <Link href="/" aria-label="Ganti Role" title="Ganti Role">
+      <Link href="/" prefetch={false} aria-label="Ganti Role" title="Ganti Role">
         <ArrowLeftRight className="size-4 shrink-0" aria-hidden="true" />
         <span
           aria-hidden={compact}

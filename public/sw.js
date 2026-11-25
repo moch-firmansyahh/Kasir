@@ -1,5 +1,5 @@
-const SHELL_CACHE = "cemal-cemul-shell-v2";
-const ASSET_CACHE = "cemal-cemul-assets-v2";
+const SHELL_CACHE = "cemal-cemul-shell-v3";
+const ASSET_CACHE = "cemal-cemul-assets-v3";
 
 const PRECACHE_URLS = [
   "/",
@@ -76,7 +76,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) {
+          if (response.ok && !response.redirected) {
             const copy = response.clone();
             caches
               .open(SHELL_CACHE)
