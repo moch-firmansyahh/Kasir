@@ -40,6 +40,8 @@ export async function GET(request: Request) {
     const fromParam = searchParams.get("from");
     const toParam = searchParams.get("to");
     const statusParam = searchParams.get("status");
+    const rawQuery = searchParams.get("q")?.trim() ?? "";
+    const sanitizedQuery = rawQuery.replace(/[,()%_\\]/g, " ").trim();
     const limitRaw = Number.parseInt(searchParams.get("limit") ?? "50", 10);
     const offsetRaw = Number.parseInt(searchParams.get("offset") ?? "0", 10);
 
@@ -87,6 +89,19 @@ export async function GET(request: Request) {
     if (statusFilter) {
       listQuery = listQuery.eq("status", statusFilter);
       summaryQuery = summaryQuery.eq("status", statusFilter);
+    }
+
+    if (sanitizedQuery) {
+      const numericToken = rawQuery.replace(/^#/, "");
+      if (/^\d+$/.test(numericToken)) {
+        const orderNoFilter = Number.parseInt(numericToken, 10);
+        const orFilter = `customer_name.ilike.%${sanitizedQuery}%,order_no.eq.${orderNoFilter}`;
+        listQuery = listQuery.or(orFilter);
+        summaryQuery = summaryQuery.or(orFilter);
+      } else {
+        listQuery = listQuery.ilike("customer_name", `%${sanitizedQuery}%`);
+        summaryQuery = summaryQuery.ilike("customer_name", `%${sanitizedQuery}%`);
+      }
     }
 
     const [listRes, summaryRes] = await Promise.all([listQuery, summaryQuery]);
@@ -284,10 +299,9 @@ export async function POST(request: Request) {
     });
 
     const pOrder = {
-      customer_name: input.customerName?.trim() || null,
-      order_type: input.orderType,
-      table_no:
-        input.orderType === "dine_in" ? input.tableNo?.trim() || null : null,
+      customer_name: input.customerName.trim(),
+      order_type: input.orderType ?? "dine_in",
+      table_no: null,
       note: input.note?.trim() || null,
       subtotal: totals.subtotal,
       discount_type: discount ? discount.type : null,

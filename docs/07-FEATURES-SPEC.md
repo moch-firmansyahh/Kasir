@@ -18,9 +18,7 @@ Gunakan teks berikut agar konsisten. Boleh diubah **hanya** bila user meminta.
 | Tambah item | "Tambah ke Pesanan" |
 | Varian dialog | "Pilih {n} {label}" |
 | Keranjang kosong | "Keranjang kosong. Pilih menu untuk mulai." |
-| Tipe | "Dine In", "Take Away" |
-| Nama customer | "Nama customer (opsional)" |
-| Meja | "No. meja (opsional)" |
+| Nama customer | "Masukkan nama customer (wajib)" |
 | Catatan | "Catatan (opsional)" |
 | Diskon | "Diskon" |
 | Subtotal / Diskon / Pajak / Total | "Subtotal", "Diskon", "Pajak", "Total" |
@@ -85,10 +83,8 @@ Gunakan teks berikut agar konsisten. Boleh diubah **hanya** bila user meminta.
 - Keranjang disimpan di memori (Zustand) selama sesi tab; **hilang saat refresh** `[ASUMSI]`.
 
 ### 2.5 Data pesanan
-- Tab Dine In/Take Away (default Dine In).
-- Nama customer: maks 60 karakter.
-- No. meja: hanya tampil pada Dine In, maks 10 karakter.
-- Catatan pesanan: maks 200 karakter.
+- Nama customer: **wajib**, maks 60 karakter.
+- Catatan pesanan: opsional, maks 200 karakter.
 
 ### 2.6 Diskon
 - Toggle `%` / `Rp` + input angka bulat ≥ 0.
@@ -113,10 +109,10 @@ Semua integer. Pembulatan `Math.round`. Contoh: subtotal 38.000, diskon 10% = 3.
 - Tunai `[S]`: input "Uang diterima"; tampil "Kembalian = diterima − total" (min 0). Bila diterima < total → peringatan "Uang kurang", **tidak** memblokir (opsional). Tidak disimpan ke DB.
 
 ### 2.8 Foto bukti bayar (FR-POS-14)
-- `<input type="file" accept="image/*" capture="environment">` disembunyikan; dipicu tombol.
-- Setelah ambil: kompres di client (maks sisi 1280px, JPEG ≈0.7), tampil pratinjau, tombol Ganti/Hapus.
+- Menyediakan dua pilihan: **Dari File** (`<input type="file" accept="image/*">`) dan **Foto Langsung** (kamera live `getUserMedia` di laptop/desktop atau kamera native `capture="environment"` di HP/tablet).
+- Setelah ambil: kompres di client (maks sisi 1280px, JPEG ≈0.7), tampil pratinjau, tombol Ganti (Dari File / Foto Langsung) & Hapus.
 - Opsional: tanpa foto tetap bisa lanjut.
-- Di perangkat tanpa kamera: input membuka galeri/file picker; tetap valid.
+- Bila kamera tidak tersedia/ditolak: tersedia tombol fallback ke pilih file.
 
 ### 2.9 Buat Pesanan
 Urutan:
@@ -172,7 +168,8 @@ Validasi: bila `variant_pick > 0`, jumlah varian ≥ `variant_pick` (FR-MENU-07)
 ## 4. `/kasir/riwayat` — Riwayat (FR-HIST)
 
 - Daftar terbaru dulu, paginasi/"muat lebih banyak".
-- Baris: `#no`, waktu (WIB), nama/meja, total, metode, badge status.
+- Pencarian nama customer atau nomor pesanan (`#no`).
+- Baris: `#no`, waktu (WIB), kolom `Nama Customer`, metode, status, total.
 - Klik → detail (Sheet/Dialog): item, varian, catatan, subtotal/diskon/pajak/total, metode, bukti bayar.
 - Bukti: thumbnail → klik perbesar. Tidak ada bukti → tombol "Tambah bukti bayar".
 - Filter tanggal `[S]`: Hari ini (default), Kemarin, Rentang. Ringkasan: jumlah pesanan + total.
@@ -197,7 +194,7 @@ Validasi: bila `variant_pick > 0`, jumlah varian ≥ `variant_pick` (FR-MENU-07)
 - Urutan tab Aktif: `created_at` menaik (FIFO).
 
 ### 6.2 Kartu pesanan
-Wajib: `#no`, badge status, nama customer/tipe/meja, waktu masuk + relatif, daftar item (`qty× nama`, varian, catatan item), catatan pesanan.
+Wajib: `#no`, badge status, nama customer, waktu masuk + relatif, daftar item (`qty× nama`, varian, catatan item), catatan pesanan.
 **Dilarang tampil:** harga, total, metode bayar, bukti bayar.
 
 ### 6.3 Aksi

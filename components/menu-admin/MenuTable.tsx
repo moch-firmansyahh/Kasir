@@ -46,16 +46,16 @@ export function MenuTable({
   return (
     <>
       {/* Desktop & tablet table */}
-      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-xs md:block">
+      <div className="hidden overflow-hidden rounded-xl border border-border bg-card shadow-xs md:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40">
-              <TableHead>Menu</TableHead>
-              <TableHead>Kategori</TableHead>
-              <TableHead>Harga</TableHead>
-              <TableHead>Varian</TableHead>
-              <TableHead>Aktif</TableHead>
-              <TableHead className="text-right">Aksi</TableHead>
+              <TableHead className="h-12 px-4 pl-6">Menu</TableHead>
+              <TableHead className="h-12 px-4">Kategori</TableHead>
+              <TableHead className="h-12 px-4">Harga</TableHead>
+              <TableHead className="h-12 px-4">Varian</TableHead>
+              <TableHead className="h-12 px-4">Aktif</TableHead>
+              <TableHead className="h-12 px-4 pr-6 text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -63,7 +63,7 @@ export function MenuTable({
               const isBusy = busyId === item.id;
               return (
                 <TableRow key={item.id}>
-                  <TableCell>
+                  <TableCell className="px-4 py-3 pl-6">
                     <div className="flex items-center gap-3">
                       <div className="relative size-11 shrink-0 overflow-hidden rounded-xl bg-muted/60">
                         {item.imageUrl ? (
@@ -83,7 +83,7 @@ export function MenuTable({
                       <span className="font-bold text-foreground">{item.name}</span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-4 py-3">
                     {item.categoryName ? (
                       <Badge variant="outline" className="bg-muted/40 font-semibold">
                         {item.categoryName}
@@ -94,10 +94,10 @@ export function MenuTable({
                       </span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-4 py-3">
                     <Money amount={item.price} className="font-bold text-foreground" />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-4 py-3">
                     {item.variantPick > 0 ? (
                       <Badge className="border-transparent bg-brand-yellow text-foreground font-bold">
                         Pilih {item.variantPick} ({item.variants.length})
@@ -108,7 +108,7 @@ export function MenuTable({
                       </span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-4 py-3">
                     <Switch
                       checked={item.isActive}
                       disabled={isBusy}
@@ -116,7 +116,7 @@ export function MenuTable({
                       onCheckedChange={(checked) => onToggleActive(item, checked)}
                     />
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="px-4 py-3 pr-6 text-right">
                     <div className="inline-flex items-center gap-1">
                       <Button
                         type="button"

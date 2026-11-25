@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 import type { MenuItemDTO } from "@/types/api";
@@ -82,7 +81,7 @@ function VariantSelectorBody({
         </Badge>
       </div>
 
-      <ScrollArea className="max-h-64 pr-2">
+      <div className="max-h-64 overflow-y-auto pr-1">
         <div className="space-y-2">
           {item.variants.map((variant) => {
             const count = counts[variant.name] ?? 0;
@@ -166,7 +165,7 @@ function VariantSelectorBody({
             );
           })}
         </div>
-      </ScrollArea>
+      </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="variant-item-note" className="text-xs font-semibold">
@@ -294,9 +293,9 @@ export function VariantDialog({
 
   return (
     <Dialog open={open} onOpenChange={resetAndClose}>
-      <DialogContent className="sm:max-w-md rounded-2xl">
-        <DialogHeader>
-          <div className="flex items-baseline justify-between gap-2 pr-6">
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="pr-10">
+          <div className="flex items-baseline justify-between gap-2">
             <DialogTitle className="font-display text-xl font-bold">
               {item.name}
             </DialogTitle>

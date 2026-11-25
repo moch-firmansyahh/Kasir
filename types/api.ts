@@ -54,8 +54,8 @@ export type CreateOrderItemInput = {
 };
 
 export type CreateOrderInput = {
-  customerName?: string;
-  orderType: OrderType;
+  customerName: string;
+  orderType?: OrderType;
   tableNo?: string;
   note?: string;
   paymentMethod: PaymentMethod;

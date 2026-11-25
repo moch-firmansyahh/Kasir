@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { History, Loader2 } from "lucide-react";
 import { OrderDetail } from "@/components/history/OrderDetail";
 import { OrderList } from "@/components/history/OrderList";
+import { SearchBar } from "@/components/pos/SearchBar";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Money } from "@/components/shared/Money";
@@ -31,6 +32,15 @@ export default function KasirRiwayatPage() {
   const [fromDate, setFromDate] = useState(todayYmd);
   const [toDate, setToDate] = useState(todayYmd);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [summary, setSummary] = useState<OrderSummaryDTO>({
@@ -62,6 +72,9 @@ export default function KasirRiwayatPage() {
       if (statusFilter !== "all") {
         params.set("status", statusFilter);
       }
+      if (debouncedQuery) {
+        params.set("q", debouncedQuery);
+      }
 
       const res = await fetch(`/api/orders?${params.toString()}`, {
         cache: "no-store",
@@ -76,7 +89,7 @@ export default function KasirRiwayatPage() {
       }
       return json.data;
     },
-    [effectiveRange.from, effectiveRange.to, statusFilter]
+    [debouncedQuery, effectiveRange.from, effectiveRange.to, statusFilter]
   );
 
   useEffect(() => {
@@ -262,6 +275,13 @@ export default function KasirRiwayatPage() {
         </div>
       </div>
 
+      {/* Pencarian nama customer / nomor pesanan */}
+      <SearchBar
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Cari nama customer atau #no..."
+      />
+
       {/* Ringkasan penjualan (FR-HIST-07) */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Card className="rounded-2xl border-border bg-card shadow-xs">
@@ -295,7 +315,14 @@ export default function KasirRiwayatPage() {
       ) : error ? (
         <ErrorState message={error} onRetry={handleRetry} />
       ) : orders.length === 0 ? (
-        <EmptyState icon={History} title="Belum ada transaksi." />
+        <EmptyState
+          icon={History}
+          title={
+            debouncedQuery
+              ? "Pesanan tidak ditemukan."
+              : "Belum ada transaksi."
+          }
+        />
       ) : (
         <div className="space-y-4">
           <OrderList

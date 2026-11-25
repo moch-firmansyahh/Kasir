@@ -67,6 +67,9 @@ Keputusan di sini **sudah disepakati user** dan **mengikat**. Untuk mengubahnya,
 ### D16 — Aset logo & foto menu awal dari `public/`
 - **Keputusan:** Logo memakai `/Logo_cemal_cemul.png` dan 4 menu awal memakai `/Mix_Platter.png`, `/French_Toast.png`, `/Single_cemul.png`, `/Couple_Cemul.png`. Menu tambahan tetap dapat mengunggah gambar ke bucket `menu-images`. _(Menggantikan asumsi A3 dan A13.)_
 
+### D17 — Tanpa pilihan Dine In / Take Away & No. Meja; Nama Customer wajib
+- **Keputusan:** Atas permintaan user, opsi Dine In / Take Away dan input No. Meja dihapus dari UI POS, Dapur, dan Riwayat; **Nama customer** wajib diisi (client & server, 1–60 karakter). Kolom DB `orders.order_type` dipertahankan dengan default `'dine_in'` dan `table_no = null` agar kompatibel tanpa migrasi destruktif.
+
 ---
 
 ## 2. Asumsi yang belum dikonfirmasi `[ASUMSI]`

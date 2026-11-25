@@ -178,8 +178,10 @@ export function PosWorkspace() {
 
   async function handleSubmitOrder() {
     if (submittingRef.current) return;
+    const customerName = cart.customerName.trim();
     if (
       cart.lines.length === 0 ||
+      !customerName ||
       !cart.paymentMethod ||
       cart.discountError
     ) {
@@ -195,12 +197,7 @@ export function PosWorkspace() {
     const attachedProof = proofFile;
 
     const payload: CreateOrderInput = {
-      customerName: cart.customerName.trim() || undefined,
-      orderType: cart.orderType,
-      tableNo:
-        cart.orderType === "dine_in"
-          ? cart.tableNo.trim() || undefined
-          : undefined,
+      customerName,
       note: cart.orderNote.trim() || undefined,
       paymentMethod: cart.paymentMethod,
       discount: cart.discount,

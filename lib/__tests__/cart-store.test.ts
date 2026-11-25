@@ -85,12 +85,12 @@ describe("useCartStore", () => {
     expect(lines[0].qty).toBe(2);
   });
 
-  it("clears tableNo when switching orderType to take_away", () => {
+  it("truncates customerName to 60 characters and resets it on clearCart", () => {
     const store = useCartStore.getState();
-    store.setTableNo("B1");
-    expect(useCartStore.getState().tableNo).toBe("B1");
-    store.setOrderType("take_away");
-    expect(useCartStore.getState().tableNo).toBe("");
+    store.setCustomerName("A".repeat(80));
+    expect(useCartStore.getState().customerName).toHaveLength(60);
+    store.clearCart();
+    expect(useCartStore.getState().customerName).toBe("");
   });
 });
 

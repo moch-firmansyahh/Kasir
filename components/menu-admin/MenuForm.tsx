@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -184,134 +183,138 @@ export function MenuForm({
   }
 
   const formBody = (
-    <ScrollArea className="max-h-[68vh] pr-3">
-      <div className="space-y-4 pb-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="menu-name" className="text-xs font-semibold">
-            Nama menu
-          </Label>
-          <Input
-            id="menu-name"
-            value={name}
-            onChange={(e) => setName(e.target.value.slice(0, 80))}
-            placeholder="Contoh: Mix Platter"
-            maxLength={80}
-            className="h-11 rounded-xl"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+      <div className="grid grid-cols-1 gap-5 pb-2 md:grid-cols-2">
+        <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="menu-price" className="text-xs font-semibold">
-              Harga (Rp)
+            <Label htmlFor="menu-name" className="text-xs font-semibold">
+              Nama menu
             </Label>
             <Input
-              id="menu-price"
-              type="text"
-              inputMode="numeric"
-              value={priceInput}
-              onChange={(e) => setPriceInput(e.target.value.replace(/[^\d]/g, ""))}
-              placeholder="15000"
-              className="h-11 rounded-xl tabular-nums"
+              id="menu-name"
+              value={name}
+              onChange={(e) => setName(e.target.value.slice(0, 80))}
+              placeholder="Contoh: Mix Platter"
+              maxLength={80}
+              className="h-11 rounded-xl"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="menu-category" className="text-xs font-semibold">
-              Kategori (opsional)
-            </Label>
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger id="menu-category" className="h-11 w-full rounded-xl">
-                <SelectValue placeholder="Pilih kategori" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_CATEGORY}>Tanpa kategori</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="menu-price" className="text-xs font-semibold">
+                Harga (Rp)
+              </Label>
+              <Input
+                id="menu-price"
+                type="text"
+                inputMode="numeric"
+                value={priceInput}
+                onChange={(e) =>
+                  setPriceInput(e.target.value.replace(/[^\d]/g, ""))
+                }
+                placeholder="15000"
+                className="h-11 rounded-xl tabular-nums"
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <span className="text-xs font-semibold text-foreground">
-            Gambar menu (opsional)
-          </span>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageSelected}
-            className="hidden"
-            aria-label="Pilih gambar menu"
-          />
-          <div className="flex items-center gap-3">
-            {imageUrl ? (
-              <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
-                <Image
-                  src={imageUrl}
-                  alt={name || "Preview menu"}
-                  fill
-                  sizes="64px"
-                  className="object-cover"
-                />
-              </div>
-            ) : null}
-
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={uploadingImage || saving}
-                onClick={() => fileInputRef.current?.click()}
-                className="min-h-11 gap-2 rounded-xl"
-              >
-                {uploadingImage ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <ImagePlus className="size-4" aria-hidden="true" />
-                )}
-                <span>
-                  {uploadingImage
-                    ? "Mengunggah..."
-                    : imageUrl
-                      ? "Ganti gambar"
-                      : "Unggah gambar"}
-                </span>
-              </Button>
-              {imageUrl ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={uploadingImage || saving}
-                  onClick={() => setImageUrl(null)}
-                  className="min-h-11 gap-1.5 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <Trash2 className="size-4" aria-hidden="true" />
-                  <span>Hapus gambar</span>
-                </Button>
-              ) : null}
+            <div className="space-y-1.5">
+              <Label htmlFor="menu-category" className="text-xs font-semibold">
+                Kategori (opsional)
+              </Label>
+              <Select value={categoryId} onValueChange={setCategoryId}>
+                <SelectTrigger id="menu-category" className="h-11 w-full rounded-xl">
+                  <SelectValue placeholder="Pilih kategori" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_CATEGORY}>Tanpa kategori</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center justify-between rounded-xl border border-border bg-card px-3.5 py-2.5">
-          <div>
-            <Label htmlFor="menu-active-switch" className="text-sm font-bold">
-              Menu aktif di Kasir
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              Menu nonaktif disembunyikan dari layar kasir.
-            </p>
+          <div className="space-y-1.5">
+            <span className="text-xs font-semibold text-foreground">
+              Gambar menu (opsional)
+            </span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelected}
+              className="hidden"
+              aria-label="Pilih gambar menu"
+            />
+            <div className="flex items-center gap-3">
+              {imageUrl ? (
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
+                  <Image
+                    src={imageUrl}
+                    alt={name || "Preview menu"}
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
+                </div>
+              ) : null}
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={uploadingImage || saving}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="min-h-11 gap-2 rounded-xl"
+                >
+                  {uploadingImage ? (
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <ImagePlus className="size-4" aria-hidden="true" />
+                  )}
+                  <span>
+                    {uploadingImage
+                      ? "Mengunggah..."
+                      : imageUrl
+                        ? "Ganti gambar"
+                        : "Unggah gambar"}
+                  </span>
+                </Button>
+                {imageUrl ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={uploadingImage || saving}
+                    onClick={() => setImageUrl(null)}
+                    className="min-h-11 gap-1.5 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="size-4" aria-hidden="true" />
+                    <span>Hapus gambar</span>
+                  </Button>
+                ) : null}
+              </div>
+            </div>
           </div>
-          <Switch
-            id="menu-active-switch"
-            checked={isActive}
-            onCheckedChange={setIsActive}
-          />
+
+          <div className="flex items-center justify-between rounded-xl border border-border bg-card px-3.5 py-2.5">
+            <div>
+              <Label htmlFor="menu-active-switch" className="text-sm font-bold">
+                Menu aktif di Kasir
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Menu nonaktif disembunyikan dari layar kasir.
+              </p>
+            </div>
+            <Switch
+              id="menu-active-switch"
+              checked={isActive}
+              onCheckedChange={setIsActive}
+            />
+          </div>
         </div>
 
         <VariantEditor
@@ -323,7 +326,7 @@ export function MenuForm({
           onVariantsChange={setVariants}
         />
       </div>
-    </ScrollArea>
+    </div>
   );
 
   const footerButton = (
@@ -332,7 +335,7 @@ export function MenuForm({
       size="lg"
       disabled={!canSave}
       onClick={handleSubmit}
-      className="h-12 w-full gap-2 rounded-xl text-base font-bold"
+      className="h-12 w-full gap-2 rounded-xl text-base font-bold sm:w-auto sm:min-w-48"
     >
       {saving ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
       <span>{saving ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Simpan Menu"}</span>
@@ -342,7 +345,7 @@ export function MenuForm({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="px-4 pb-6">
+        <DrawerContent className="max-h-[90vh] px-4 pb-6">
           <DrawerHeader className="px-0 text-left">
             <DrawerTitle className="font-display text-xl font-bold">
               {isEdit ? "Edit Menu" : "Tambah Menu"}
@@ -360,8 +363,8 @@ export function MenuForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-2xl sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-3xl">
+        <DialogHeader className="pr-10">
           <DialogTitle className="font-display text-xl font-bold">
             {isEdit ? "Edit Menu" : "Tambah Menu"}
           </DialogTitle>

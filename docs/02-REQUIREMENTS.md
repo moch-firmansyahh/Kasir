@@ -29,7 +29,7 @@ Prioritas: **[M]** wajib · **[S]** sebaiknya ada (kerjakan setelah semua [M] fa
 | FR-POS-07 | M | Ubah qty & hapus item | Stepper +/−; qty menjadi 0 menghapus baris |
 | FR-POS-08 | M | Catatan per item | Teks opsional tampil di baris keranjang dan di dapur |
 | FR-POS-09 | M | **Total otomatis** | Subtotal, diskon, pajak, total berubah seketika setiap keranjang/diskon berubah |
-| FR-POS-10 | M | Data pesanan | Nama customer (opsional), tipe Dine In/Take Away, nomor meja (hanya Dine In, opsional), catatan pesanan (opsional) |
+| FR-POS-10 | M | Data pesanan | Nama customer (wajib), catatan pesanan (opsional) |
 | FR-POS-11 | M | Diskon per pesanan | Persen **atau** nominal; tidak boleh > subtotal; persen 0–100; opsional |
 | FR-POS-12 | M | Pajak dari pengaturan | Persentase global, default 0%; dihitung dari (subtotal − diskon) |
 | FR-POS-13 | M | Metode bayar | Tunai / QRIS / Transfer; wajib dipilih `[ASUMSI A7]` |
@@ -57,7 +57,7 @@ Prioritas: **[M]** wajib · **[S]** sebaiknya ada (kerjakan setelah semua [M] fa
 
 | ID | P | Requirement | Kriteria penerimaan |
 |---|---|---|---|
-| FR-HIST-01 | M | Daftar pesanan terbaru | Kolom: nomor, waktu, customer/meja, total, metode, status |
+| FR-HIST-01 | M | Daftar pesanan terbaru | Kolom: nomor, waktu, customer, total, metode, status |
 | FR-HIST-02 | M | Detail pesanan | Item, varian, catatan, rincian angka, bukti bayar bila ada |
 | FR-HIST-03 | M | Lihat bukti bayar | Gambar tampil; klik untuk perbesar |
 | FR-HIST-04 | M | Tambah/ganti bukti bayar | Bila belum ada, tombol "Tambah bukti bayar" membuka kamera |
@@ -77,7 +77,7 @@ Prioritas: **[M]** wajib · **[S]** sebaiknya ada (kerjakan setelah semua [M] fa
 | ID | P | Requirement | Kriteria penerimaan |
 |---|---|---|---|
 | FR-KIT-01 | M | Daftar pesanan realtime | Pesanan baru muncul tanpa refresh dalam beberapa detik |
-| FR-KIT-02 | M | Isi kartu pesanan | Nomor, waktu masuk, nama/meja, tipe, item × qty, varian, catatan item, catatan pesanan |
+| FR-KIT-02 | M | Isi kartu pesanan | Nomor, waktu masuk, nama customer, item × qty, varian, catatan item, catatan pesanan |
 | FR-KIT-03 | M | Ubah status | Baru → Dimasak → Selesai lewat tombol |
 | FR-KIT-04 | M | Tab Aktif/Selesai | Aktif = baru+dimasak; Selesai = selesai (hari ini) |
 | FR-KIT-05 | M | Tanpa data uang | Tidak ada harga, total, metode bayar, bukti di layar Dapur |

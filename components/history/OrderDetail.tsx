@@ -126,22 +126,11 @@ export function OrderDetail({
             <div className="space-y-4 pb-4">
               <div className="rounded-xl border border-border bg-card p-3.5 text-sm space-y-1">
                 <div className="flex justify-between gap-2">
-                  <span className="text-muted-foreground">Tipe</span>
+                  <span className="text-muted-foreground">Customer</span>
                   <span className="font-bold text-foreground">
-                    {order.orderType === "dine_in" ? "Dine In" : "Take Away"}
-                    {order.orderType === "dine_in" && order.tableNo
-                      ? ` · Meja ${order.tableNo}`
-                      : ""}
+                    {order.customerName?.trim() || "Customer"}
                   </span>
                 </div>
-                {order.customerName ? (
-                  <div className="flex justify-between gap-2">
-                    <span className="text-muted-foreground">Customer</span>
-                    <span className="font-bold text-foreground">
-                      {order.customerName}
-                    </span>
-                  </div>
-                ) : null}
                 <div className="flex justify-between gap-2">
                   <span className="text-muted-foreground">Metode bayar</span>
                   <span className="font-bold text-foreground">

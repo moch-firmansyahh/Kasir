@@ -32,13 +32,7 @@ export function OrderCard({
   const isCriticalWait = isActive && elapsedMinutes >= 20;
   const isWarningWait = isActive && !isCriticalWait && elapsedMinutes >= 10;
 
-  const typeLabel = order.orderType === "dine_in" ? "Dine In" : "Take Away";
-  const customerLabel = order.customerName?.trim() || typeLabel;
-  const subParts = [customerLabel];
-  if (order.customerName?.trim()) subParts.push(typeLabel);
-  if (order.orderType === "dine_in" && order.tableNo?.trim()) {
-    subParts.push(`Meja ${order.tableNo.trim()}`);
-  }
+  const customerLabel = order.customerName?.trim() || "Customer";
 
   return (
     <Card
@@ -62,7 +56,7 @@ export function OrderCard({
 
           <div className="space-y-1">
             <p className="text-base font-bold text-foreground">
-              {subParts.join(" · ")}
+              {customerLabel}
             </p>
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1 font-semibold">

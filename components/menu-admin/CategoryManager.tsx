@@ -30,7 +30,6 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { ApiResponse, CategoryDTO } from "@/types/api";
 
@@ -155,7 +154,7 @@ export function CategoryManager({
         </Button>
       </form>
 
-      <ScrollArea className="max-h-72 pr-2">
+      <div className="max-h-72 overflow-y-auto pr-1">
         {categories.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             Belum ada kategori.
@@ -265,7 +264,7 @@ export function CategoryManager({
             })}
           </ul>
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 
@@ -289,8 +288,8 @@ export function CategoryManager({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-2xl sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="pr-10">
           <DialogTitle className="font-display text-xl font-bold">
             Kelola Kategori
           </DialogTitle>

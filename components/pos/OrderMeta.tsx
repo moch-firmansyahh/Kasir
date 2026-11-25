@@ -1,83 +1,51 @@
 "use client";
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import type { OrderType } from "@/types/db";
 
 type OrderMetaProps = {
-  orderType: OrderType;
   customerName: string;
-  tableNo: string;
   orderNote: string;
-  onOrderTypeChange: (value: OrderType) => void;
   onCustomerNameChange: (value: string) => void;
-  onTableNoChange: (value: string) => void;
   onOrderNoteChange: (value: string) => void;
 };
 
 export function OrderMeta({
-  orderType,
   customerName,
-  tableNo,
   orderNote,
-  onOrderTypeChange,
   onCustomerNameChange,
-  onTableNoChange,
   onOrderNoteChange,
 }: OrderMetaProps) {
+  const [customerTouched, setCustomerTouched] = useState(false);
+  const showCustomerError = customerTouched && customerName.trim().length === 0;
+
   return (
     <div className="space-y-3">
-      <Tabs
-        value={orderType}
-        onValueChange={(value) => onOrderTypeChange(value as OrderType)}
-      >
-        <TabsList className="grid w-full grid-cols-2 rounded-xl bg-muted p-1 group-data-horizontal/tabs:h-12">
-          <TabsTrigger
-            value="dine_in"
-            className="h-10 rounded-lg text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
-          >
-            Dine In
-          </TabsTrigger>
-          <TabsTrigger
-            value="take_away"
-            className="h-10 rounded-lg text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
-          >
-            Take Away
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <div className={orderType === "dine_in" ? "space-y-1" : "space-y-1 sm:col-span-2"}>
-          <Label htmlFor="order-customer-name" className="sr-only">
-            Nama customer (opsional)
-          </Label>
-          <Input
-            id="order-customer-name"
-            value={customerName}
-            onChange={(e) => onCustomerNameChange(e.target.value)}
-            placeholder="Nama customer (opsional)"
-            maxLength={60}
-            className="h-11 rounded-xl bg-card"
-          />
-        </div>
-
-        {orderType === "dine_in" ? (
-          <div className="space-y-1">
-            <Label htmlFor="order-table-no" className="sr-only">
-              No. meja (opsional)
-            </Label>
-            <Input
-              id="order-table-no"
-              value={tableNo}
-              onChange={(e) => onTableNoChange(e.target.value)}
-              placeholder="No. meja (opsional)"
-              maxLength={10}
-              className="h-11 rounded-xl bg-card"
-            />
-          </div>
+      <div className="space-y-1.5">
+        <Label
+          htmlFor="order-customer-name"
+          className="text-xs font-bold text-foreground"
+        >
+          Nama customer <span className="text-destructive">*</span>
+        </Label>
+        <Input
+          id="order-customer-name"
+          value={customerName}
+          onChange={(e) => onCustomerNameChange(e.target.value)}
+          onBlur={() => setCustomerTouched(true)}
+          placeholder="Masukkan nama customer (wajib)"
+          maxLength={60}
+          required
+          aria-required="true"
+          aria-invalid={showCustomerError}
+          className="h-11 rounded-lg bg-card px-3.5"
+        />
+        {showCustomerError ? (
+          <p className="text-xs font-medium text-destructive">
+            Nama customer wajib diisi.
+          </p>
         ) : null}
       </div>
 
@@ -92,7 +60,7 @@ export function OrderMeta({
           placeholder="Catatan (opsional)"
           maxLength={200}
           rows={2}
-          className="min-h-11 resize-none rounded-xl bg-card"
+          className="min-h-11 resize-none rounded-lg bg-card px-3.5 py-2.5"
         />
       </div>
     </div>

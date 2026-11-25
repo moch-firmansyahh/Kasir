@@ -1,18 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { Camera, Expand, Loader2, RefreshCw } from "lucide-react";
+import { Expand, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ProofSourcePicker } from "@/components/shared/ProofSourcePicker";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { compressImageFile } from "@/lib/image";
-import { MAX_UPLOAD_BYTES } from "@/lib/validators";
 import type { ApiResponse } from "@/types/api";
 
 type ProofViewerProps = {
@@ -28,23 +26,12 @@ export function ProofViewer({
   proofUrl,
   onUploaded,
 }: ProofViewerProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
 
-  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = e.target.files?.[0];
-    e.target.value = "";
-    if (!selected) return;
-
+  async function handleUploadProof(compressed: File) {
     setUploading(true);
     try {
-      const compressed = await compressImageFile(selected);
-      if (compressed.size > MAX_UPLOAD_BYTES) {
-        toast.error("Ukuran foto maksimal 2 MB.");
-        return;
-      }
-
       const formData = new FormData();
       formData.append("file", compressed);
 
@@ -71,38 +58,15 @@ export function ProofViewer({
     <div className="space-y-2.5">
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-bold text-foreground">Bukti bayar</span>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleFileSelect}
-          className="hidden"
-          aria-label="Unggah foto bukti bayar"
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={uploading}
-          onClick={() => inputRef.current?.click()}
-          className="min-h-10 gap-1.5 rounded-xl font-bold"
-        >
-          {uploading ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : proofUrl ? (
-            <RefreshCw className="size-4" aria-hidden="true" />
-          ) : (
-            <Camera className="size-4" aria-hidden="true" />
-          )}
-          <span>
-            {uploading
-              ? "Mengunggah..."
-              : proofUrl
-                ? "Ganti bukti bayar"
-                : "Tambah bukti bayar"}
-          </span>
-        </Button>
+        {proofUrl ? (
+          <ProofSourcePicker
+            busy={uploading}
+            mode="dropdown"
+            triggerLabel={uploading ? "Mengunggah..." : "Ganti bukti bayar"}
+            triggerIcon={<RefreshCw className="size-4" aria-hidden="true" />}
+            onImageReady={handleUploadProof}
+          />
+        ) : null}
       </div>
 
       {proofUrl ? (
@@ -146,9 +110,16 @@ export function ProofViewer({
           </Dialog>
         </>
       ) : (
-        <p className="rounded-xl border border-dashed border-border bg-muted/30 px-3 py-4 text-center text-xs text-muted-foreground">
-          Belum ada foto bukti bayar.
-        </p>
+        <div className="space-y-2.5">
+          <p className="rounded-xl border border-dashed border-border bg-muted/30 px-3 py-4 text-center text-xs text-muted-foreground">
+            Belum ada foto bukti bayar.
+          </p>
+          <ProofSourcePicker
+            busy={uploading}
+            mode="buttons"
+            onImageReady={handleUploadProof}
+          />
+        </div>
       )}
     </div>
   );

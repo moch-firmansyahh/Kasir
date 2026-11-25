@@ -26,8 +26,12 @@ export const discountSchema = z
   );
 
 export const createOrderInput = z.object({
-  customerName: z.string().trim().max(60).optional(),
-  orderType: z.enum(["dine_in", "take_away"]),
+  customerName: z
+    .string()
+    .trim()
+    .min(1, "Nama customer wajib diisi")
+    .max(60, "Nama customer maksimal 60 karakter"),
+  orderType: z.enum(["dine_in", "take_away"]).optional().default("dine_in"),
   tableNo: z.string().trim().max(10).optional(),
   note: z.string().trim().max(200).optional(),
   paymentMethod: z.enum(["cash", "qris", "transfer"]),

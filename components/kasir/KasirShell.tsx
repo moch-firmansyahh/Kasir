@@ -73,25 +73,32 @@ export function KasirShell({ storeName, children }: KasirShellProps) {
       {/* Desktop & tablet collapsible sidebar */}
       <aside
         className={cn(
-          "hidden shrink-0 flex-col justify-between border-r border-sidebar-border bg-sidebar transition-all duration-200 sm:flex",
-          collapsed ? "w-20 p-3" : "w-60 p-4"
+          "sticky top-0 hidden h-screen shrink-0 flex-col justify-between border-r border-sidebar-border bg-sidebar p-4 transition-[width] duration-200 sm:flex",
+          collapsed ? "w-20" : "w-60"
         )}
       >
-        <div className="space-y-4">
-          <div
-            className={cn(
-              "flex gap-2",
-              collapsed
-                ? "flex-col items-center"
-                : "flex-row items-center justify-between"
-            )}
-          >
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => setCollapsed((prev) => !prev)}
+          aria-label={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+          aria-expanded={!collapsed}
+          title={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+          className="absolute top-1/2 -right-5 z-20 size-11 -translate-y-1/2 rounded-full border-sidebar-border bg-card text-sidebar-foreground shadow-sm hover:bg-sidebar-accent"
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="size-5" aria-hidden="true" />
+          ) : (
+            <PanelLeftClose className="size-5" aria-hidden="true" />
+          )}
+        </Button>
+
+        <div className="space-y-4 overflow-hidden">
+          <div className="flex h-12 items-center">
             <Link
               href="/kasir"
-              className={cn(
-                "flex min-w-0 items-center gap-2.5 rounded-xl py-1 outline-none focus-visible:ring-3 focus-visible:ring-ring",
-                collapsed ? "justify-center" : "flex-1"
-              )}
+              className="flex h-12 min-w-0 flex-1 items-center justify-start gap-2.5 overflow-hidden rounded-xl px-[3px] outline-none focus-visible:ring-3 focus-visible:ring-ring"
               aria-label={storeName}
               title={storeName}
             >
@@ -102,29 +109,16 @@ export function KasirShell({ storeName, children }: KasirShellProps) {
                 height={40}
                 className="size-10 shrink-0 rounded-full object-contain"
               />
-              {collapsed ? null : (
-                <span className="truncate font-display text-xl font-extrabold text-sidebar-foreground">
-                  {storeName}
-                </span>
-              )}
+              <span
+                aria-hidden={collapsed}
+                className={cn(
+                  "truncate whitespace-nowrap font-display text-xl font-extrabold text-sidebar-foreground transition-opacity duration-150",
+                  collapsed ? "pointer-events-none opacity-0" : "opacity-100"
+                )}
+              >
+                {storeName}
+              </span>
             </Link>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => setCollapsed((prev) => !prev)}
-              aria-label={collapsed ? "Buka sidebar" : "Tutup sidebar"}
-              aria-expanded={!collapsed}
-              title={collapsed ? "Buka sidebar" : "Tutup sidebar"}
-              className="size-11 shrink-0 rounded-xl text-sidebar-foreground hover:bg-sidebar-accent"
-            >
-              {collapsed ? (
-                <PanelLeftOpen className="size-5" aria-hidden="true" />
-              ) : (
-                <PanelLeftClose className="size-5" aria-hidden="true" />
-              )}
-            </Button>
           </div>
 
           <Separator className="bg-sidebar-border" />
@@ -142,35 +136,36 @@ export function KasirShell({ storeName, children }: KasirShellProps) {
                   title={item.label}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring",
-                    collapsed ? "justify-center" : "justify-start",
+                    "flex min-h-11 items-center justify-start gap-3 overflow-hidden rounded-xl px-[13px] text-sm font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring",
                     active
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                 >
                   <Icon className="size-5 shrink-0" aria-hidden="true" />
-                  {collapsed ? null : <span>{item.label}</span>}
+                  <span
+                    aria-hidden={collapsed}
+                    className={cn(
+                      "whitespace-nowrap transition-opacity duration-150",
+                      collapsed ? "pointer-events-none opacity-0" : "opacity-100"
+                    )}
+                  >
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
           </nav>
         </div>
 
-        <div className="pt-4">
+        <div className="overflow-hidden pt-4">
           <Separator className="mb-4 bg-sidebar-border" />
-          {collapsed ? (
-            <div className="flex justify-center">
-              <RoleSwitcher compact />
-            </div>
-          ) : (
-            <RoleSwitcher className="w-full justify-start" />
-          )}
+          <RoleSwitcher compact={collapsed} className="w-full" />
         </div>
       </aside>
 
       {/* Mobile (<640px) top header */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card/95 px-4 backdrop-blur sm:hidden">
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card px-4 sm:hidden">
         <Link
           href="/kasir"
           className="flex items-center gap-2 font-display text-xl font-extrabold text-foreground"
@@ -193,7 +188,7 @@ export function KasirShell({ storeName, children }: KasirShellProps) {
       {/* Mobile (<640px) fixed bottom navigation */}
       <nav
         aria-label="Navigasi Kasir Bawah"
-        className="fixed inset-x-0 bottom-0 z-40 grid h-16 grid-cols-4 border-t border-border bg-card/95 px-1 py-1.5 backdrop-blur sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid h-16 grid-cols-4 border-t border-border bg-card px-1 py-1.5 sm:hidden"
       >
         {KASIR_NAV_ITEMS.map((item) => {
           const Icon = item.icon;

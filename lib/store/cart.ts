@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Discount } from "@/lib/pricing";
-import type { DiscountType, OrderType, PaymentMethod } from "@/types/db";
+import type { DiscountType, PaymentMethod } from "@/types/db";
 
 export type CartLine = {
   key: string;
@@ -82,9 +82,7 @@ export function parseCartDiscount(
 
 type CartState = {
   lines: CartLine[];
-  orderType: OrderType;
   customerName: string;
-  tableNo: string;
   orderNote: string;
   discountType: DiscountType;
   discountInput: string;
@@ -96,9 +94,7 @@ type CartState = {
   setLineNote: (key: string, note: string) => void;
   removeLine: (key: string) => void;
   clearCart: () => void;
-  setOrderType: (orderType: OrderType) => void;
   setCustomerName: (name: string) => void;
-  setTableNo: (tableNo: string) => void;
   setOrderNote: (note: string) => void;
   setDiscountType: (type: DiscountType) => void;
   setDiscountInput: (value: string) => void;
@@ -110,9 +106,7 @@ type CartState = {
 
 export const useCartStore = create<CartState>((set) => ({
   lines: [],
-  orderType: "dine_in",
   customerName: "",
-  tableNo: "",
   orderNote: "",
   discountType: "percent",
   discountInput: "",
@@ -215,9 +209,7 @@ export const useCartStore = create<CartState>((set) => ({
   clearCart: () =>
     set({
       lines: [],
-      orderType: "dine_in",
       customerName: "",
-      tableNo: "",
       orderNote: "",
       discountType: "percent",
       discountInput: "",
@@ -226,16 +218,8 @@ export const useCartStore = create<CartState>((set) => ({
       invalidMenuIds: [],
     }),
 
-  setOrderType: (orderType) =>
-    set((state) => ({
-      orderType,
-      tableNo: orderType === "take_away" ? "" : state.tableNo,
-    })),
-
   setCustomerName: (customerName) =>
     set({ customerName: customerName.slice(0, 60) }),
-
-  setTableNo: (tableNo) => set({ tableNo: tableNo.slice(0, 10) }),
 
   setOrderNote: (orderNote) => set({ orderNote: orderNote.slice(0, 200) }),
 

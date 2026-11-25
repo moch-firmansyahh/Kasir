@@ -9,11 +9,15 @@ import { cn } from "@/lib/utils";
 type SearchBarProps = {
   value: string;
   onChange: (value: string) => void;
+  placeholder?: string;
   className?: string;
 };
 
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
-  function SearchBar({ value, onChange, className }, ref) {
+  function SearchBar(
+    { value, onChange, placeholder = "Cari menu...", className },
+    ref
+  ) {
     return (
       <div className={cn("relative flex items-center", className)}>
         <Search
@@ -25,8 +29,8 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           type="search"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Cari menu..."
-          aria-label="Cari menu..."
+          placeholder={placeholder}
+          aria-label={placeholder}
           className="h-11 rounded-xl border-border bg-card pl-10 pr-11 text-sm text-foreground placeholder:text-muted-foreground"
         />
         {value ? (

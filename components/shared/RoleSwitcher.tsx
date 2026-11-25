@@ -18,16 +18,24 @@ export function RoleSwitcher({ compact = false, className }: RoleSwitcherProps) 
     <Button
       asChild
       variant="outline"
-      size={compact ? "icon-lg" : "default"}
+      size="default"
       className={cn(
-        "min-h-11 rounded-xl border-border bg-card text-foreground hover:bg-muted",
-        compact ? "w-11" : "gap-2 px-3",
+        "min-h-11 justify-start overflow-hidden rounded-xl border-border bg-card text-foreground hover:bg-muted",
+        compact ? "px-3.5" : "gap-2.5 px-3.5",
         className
       )}
     >
       <Link href="/" aria-label="Ganti Role" title="Ganti Role">
         <ArrowLeftRight className="size-4 shrink-0" aria-hidden="true" />
-        {compact ? null : <span>Ganti Role</span>}
+        <span
+          aria-hidden={compact}
+          className={cn(
+            "whitespace-nowrap transition-opacity duration-150",
+            compact ? "pointer-events-none opacity-0" : "opacity-100"
+          )}
+        >
+          Ganti Role
+        </span>
       </Link>
     </Button>
   );

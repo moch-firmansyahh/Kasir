@@ -23,15 +23,8 @@ const PAYMENT_LABEL: Record<PaymentMethod, string> = {
   transfer: "Transfer",
 };
 
-function formatCustomerOrTable(order: OrderDTO): string {
-  const parts: string[] = [];
-  if (order.customerName?.trim()) parts.push(order.customerName.trim());
-  if (order.orderType === "dine_in") {
-    parts.push(order.tableNo?.trim() ? `Meja ${order.tableNo.trim()}` : "Dine In");
-  } else {
-    parts.push("Take Away");
-  }
-  return parts.join(" · ");
+function formatCustomerName(order: OrderDTO): string {
+  return order.customerName?.trim() || "-";
 }
 
 type OrderListProps = {
@@ -43,16 +36,16 @@ export function OrderList({ orders, onSelect }: OrderListProps) {
   return (
     <>
       {/* Desktop & tablet table */}
-      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-xs md:block">
+      <div className="hidden overflow-hidden rounded-xl border border-border bg-card shadow-xs md:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40">
-              <TableHead>No.</TableHead>
-              <TableHead>Waktu (WIB)</TableHead>
-              <TableHead>Customer / Meja</TableHead>
-              <TableHead>Metode</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="h-12 px-4 pl-6">No.</TableHead>
+              <TableHead className="h-12 px-4">Waktu (WIB)</TableHead>
+              <TableHead className="h-12 px-4">Nama Customer</TableHead>
+              <TableHead className="h-12 px-4">Metode</TableHead>
+              <TableHead className="h-12 px-4">Status</TableHead>
+              <TableHead className="h-12 px-4 pr-6 text-right">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,15 +55,15 @@ export function OrderList({ orders, onSelect }: OrderListProps) {
                 onClick={() => onSelect(order.id)}
                 className="cursor-pointer hover:bg-muted/40"
               >
-                <TableCell className="font-display font-bold tabular-nums">
+                <TableCell className="px-4 py-3.5 pl-6 font-display font-bold tabular-nums">
                   #{order.orderNo}
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground">
+                <TableCell className="px-4 py-3.5 text-xs text-muted-foreground">
                   {formatWaktu(order.createdAt)}
                 </TableCell>
-                <TableCell className="font-semibold text-foreground">
+                <TableCell className="px-4 py-3.5 font-semibold text-foreground">
                   <div className="flex items-center gap-2">
-                    <span>{formatCustomerOrTable(order)}</span>
+                    <span>{formatCustomerName(order)}</span>
                     {order.paymentProofUrl ? (
                       <Badge variant="outline" className="gap-1 text-xs">
                         <Receipt className="size-3" aria-hidden="true" />
@@ -79,13 +72,13 @@ export function OrderList({ orders, onSelect }: OrderListProps) {
                     ) : null}
                   </div>
                 </TableCell>
-                <TableCell className="text-sm font-semibold">
+                <TableCell className="px-4 py-3.5 text-sm font-semibold">
                   {PAYMENT_LABEL[order.paymentMethod]}
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-4 py-3.5">
                   <StatusBadge status={order.status} />
                 </TableCell>
-                <TableCell className="text-right font-extrabold text-foreground">
+                <TableCell className="px-4 py-3.5 pr-6 text-right font-extrabold text-foreground">
                   <Money amount={order.total} />
                 </TableCell>
               </TableRow>
@@ -113,7 +106,10 @@ export function OrderList({ orders, onSelect }: OrderListProps) {
                 </div>
 
                 <p className="text-sm font-semibold text-foreground">
-                  {formatCustomerOrTable(order)}
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Nama:{" "}
+                  </span>
+                  {formatCustomerName(order)}
                 </p>
 
                 <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">

@@ -58,15 +58,17 @@ export function Cart({
   onRetryProof,
   onDismissRetryProof,
 }: CartProps) {
+  const hasCustomerName = cart.customerName.trim().length > 0;
   const canSubmit =
     cart.lines.length > 0 &&
+    hasCustomerName &&
     Boolean(cart.paymentMethod) &&
     !cart.discountError &&
     !submitting;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center justify-between gap-2 pb-3">
+      <div className="flex items-center justify-between gap-2 pb-3 pr-12 lg:pr-0">
         <div className="flex items-center gap-2">
           <h2 className="font-display text-xl font-bold text-foreground">
             Pesanan baru
@@ -170,13 +172,9 @@ export function Cart({
           <ScrollArea className="min-h-0 flex-1 pr-2">
             <div className="space-y-3 pb-2">
               <OrderMeta
-                orderType={cart.orderType}
                 customerName={cart.customerName}
-                tableNo={cart.tableNo}
                 orderNote={cart.orderNote}
-                onOrderTypeChange={cart.setOrderType}
                 onCustomerNameChange={cart.setCustomerName}
-                onTableNoChange={cart.setTableNo}
                 onOrderNoteChange={cart.setOrderNote}
               />
 
@@ -229,6 +227,12 @@ export function Cart({
               className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive"
             >
               {submitError}
+            </p>
+          ) : null}
+
+          {!hasCustomerName ? (
+            <p className="text-xs font-medium text-muted-foreground">
+              Isi nama customer terlebih dahulu untuk membuat pesanan.
             </p>
           ) : null}
 
