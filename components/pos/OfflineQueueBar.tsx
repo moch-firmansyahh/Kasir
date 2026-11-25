@@ -140,7 +140,7 @@ export function OfflineQueueBar({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-1 py-1">
             {queuedOrders.length === 0 ? (
               <p className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-center text-sm text-muted-foreground">
                 Semua antrean offline sudah terkirim.

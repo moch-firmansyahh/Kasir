@@ -13,12 +13,18 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { loadMenuAdminCache, saveMenuAdminCache } from "@/lib/offline/posCache";
 import type { ApiResponse, CategoryDTO, MenuItemDTO } from "@/types/api";
 
 export default function KasirMenuPage() {
-  const [categories, setCategories] = useState<CategoryDTO[]>([]);
-  const [items, setItems] = useState<MenuItemDTO[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialCache] = useState(() => loadMenuAdminCache());
+  const [categories, setCategories] = useState<CategoryDTO[]>(
+    () => initialCache?.categories ?? []
+  );
+  const [items, setItems] = useState<MenuItemDTO[]>(
+    () => initialCache?.items ?? []
+  );
+  const [loading, setLoading] = useState(() => !initialCache);
   const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,6 +48,7 @@ export default function KasirMenuPage() {
     if (!res.ok || json.error) {
       throw new Error(json.error?.message ?? "Gagal memuat daftar menu.");
     }
+    saveMenuAdminCache(json.data);
     return json.data;
   }, []);
 
@@ -70,9 +77,11 @@ export default function KasirMenuPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(
-          err instanceof Error ? err.message : "Gagal memuat daftar menu."
-        );
+        if (!initialCache) {
+          setError(
+            err instanceof Error ? err.message : "Gagal memuat daftar menu."
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -80,7 +89,7 @@ export default function KasirMenuPage() {
     return () => {
       cancelled = true;
     };
-  }, [fetchMenu]);
+  }, [fetchMenu, initialCache]);
 
   const filteredItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();

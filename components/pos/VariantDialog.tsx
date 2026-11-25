@@ -81,7 +81,7 @@ function VariantSelectorBody({
         </Badge>
       </div>
 
-      <div className="max-h-64 overflow-y-auto pr-1">
+      <div className="max-h-64 overflow-y-auto px-1 py-1">
         <div className="space-y-2">
           {item.variants.map((variant) => {
             const count = counts[variant.name] ?? 0;
@@ -284,7 +284,7 @@ export function VariantDialog({
             </div>
             <DrawerDescription>{subtitle}</DrawerDescription>
           </DrawerHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 py-1">
             {body}
           </div>
           <DrawerFooter className="shrink-0 px-0 pt-4">{submitButton}</DrawerFooter>

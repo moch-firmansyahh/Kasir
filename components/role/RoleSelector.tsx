@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ChefHat, ShoppingBag } from "lucide-react";
@@ -47,11 +47,15 @@ export function RoleSelector({ savedRole }: RoleSelectorProps) {
   const router = useRouter();
   const [navigatingRole, setNavigatingRole] = useState<PosRole | null>(null);
 
+  useEffect(() => {
+    router.prefetch("/kasir");
+    router.prefetch("/dapur");
+  }, [router]);
+
   function handleSelect(role: PosRole) {
     setNavigatingRole(role);
     setClientRoleCookie(role);
     router.push(getRoleHomePath(role));
-    router.refresh();
   }
 
   return (

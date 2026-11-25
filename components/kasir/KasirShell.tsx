@@ -132,6 +132,7 @@ export function KasirShell({ storeName, children }: KasirShellProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={true}
                   aria-label={item.label}
                   title={item.label}
                   aria-current={active ? "page" : undefined}
@@ -198,6 +199,7 @@ export function KasirShell({ storeName, children }: KasirShellProps) {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={true}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-xs font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring",

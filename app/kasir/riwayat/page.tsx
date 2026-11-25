@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getWibDateString } from "@/lib/format";
+import { loadHistoryCache, saveHistoryCache } from "@/lib/offline/posCache";
 import { getSupabaseRealtimeClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { ApiResponse, OrderDTO, OrderSummaryDTO } from "@/types/api";
@@ -42,24 +43,28 @@ export default function KasirRiwayatPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const [orders, setOrders] = useState<OrderDTO[]>([]);
-  const [summary, setSummary] = useState<OrderSummaryDTO>({
-    count: 0,
-    totalSales: 0,
-  });
-  const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-
   const effectiveRange = useMemo(() => {
     if (preset === "today") return { from: todayYmd, to: todayYmd };
     if (preset === "yesterday") return { from: yesterdayYmd, to: yesterdayYmd };
     return { from: fromDate, to: toDate < fromDate ? fromDate : toDate };
   }, [fromDate, preset, toDate, todayYmd, yesterdayYmd]);
+
+  const cacheKey = `${effectiveRange.from}|${effectiveRange.to}|${statusFilter}|${debouncedQuery}`;
+  const [initialCache] = useState(() => loadHistoryCache(cacheKey));
+
+  const [orders, setOrders] = useState<OrderDTO[]>(
+    () => initialCache?.orders ?? []
+  );
+  const [summary, setSummary] = useState<OrderSummaryDTO>(
+    () => initialCache?.summary ?? { count: 0, totalSales: 0 }
+  );
+  const [hasMore, setHasMore] = useState(() => initialCache?.hasMore ?? false);
+  const [loading, setLoading] = useState(() => !initialCache);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const fetchHistory = useCallback(
     async (offset: number) => {
@@ -87,13 +92,17 @@ export default function KasirRiwayatPage() {
       if (!res.ok || json.error) {
         throw new Error(json.error?.message ?? "Gagal memuat riwayat pesanan.");
       }
+      if (offset === 0) {
+        saveHistoryCache(cacheKey, json.data);
+      }
       return json.data;
     },
-    [debouncedQuery, effectiveRange.from, effectiveRange.to, statusFilter]
+    [cacheKey, debouncedQuery, effectiveRange.from, effectiveRange.to, statusFilter]
   );
 
   useEffect(() => {
     let cancelled = false;
+    const cached = loadHistoryCache(cacheKey);
     fetchHistory(0)
       .then((data) => {
         if (cancelled) return;
@@ -104,9 +113,11 @@ export default function KasirRiwayatPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(
-          err instanceof Error ? err.message : "Gagal memuat riwayat pesanan."
-        );
+        if (!cached) {
+          setError(
+            err instanceof Error ? err.message : "Gagal memuat riwayat pesanan."
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -115,7 +126,7 @@ export default function KasirRiwayatPage() {
     return () => {
       cancelled = true;
     };
-  }, [fetchHistory]);
+  }, [cacheKey, fetchHistory]);
 
   // Realtime updates so kitchen status changes reflect in Kasir Riwayat (FR-HIST-05)
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { API_ERROR_CODES, fail, ok } from "@/lib/api";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { settingsInput } from "@/lib/validators";
@@ -88,6 +88,7 @@ export async function PUT(request: Request) {
       );
     }
 
+    revalidateTag("settings", { expire: 0 });
     revalidatePath("/kasir", "layout");
     revalidatePath("/dapur");
 

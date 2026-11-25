@@ -168,7 +168,7 @@ export function Cart({
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pt-0.5">
             <div className="space-y-3 pb-2">
               <OrderMeta
                 customerName={cart.customerName}

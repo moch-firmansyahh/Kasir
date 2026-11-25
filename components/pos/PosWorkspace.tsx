@@ -16,6 +16,10 @@ import { CartSheetResponsive } from "@/components/pos/CartSheetMobile";
 import { CategoryTabs } from "@/components/pos/CategoryTabs";
 import { MenuCard } from "@/components/pos/MenuCard";
 import { OfflineQueueBar } from "@/components/pos/OfflineQueueBar";
+import {
+  OrderStatusDialog,
+  type OrderFeedbackState,
+} from "@/components/pos/OrderStatusDialog";
 import { SearchBar } from "@/components/pos/SearchBar";
 import { VariantDialog } from "@/components/pos/VariantDialog";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -81,6 +85,9 @@ export function PosWorkspace() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [retryProof, setRetryProof] = useState<PendingProofRetry | null>(null);
   const [retryingProof, setRetryingProof] = useState(false);
+  const [orderFeedback, setOrderFeedback] = useState<OrderFeedbackState | null>(
+    null
+  );
 
   const submittingRef = useRef(false);
   const flushingRef = useRef(false);
@@ -400,8 +407,14 @@ export function PosWorkspace() {
       setProofFile(null);
       setRetryProof(null);
       setMobileCartOpen(false);
+      setOrderFeedback({
+        kind: "queued",
+        customerName,
+        itemCount,
+        previewTotal,
+        paymentMethod: payload.paymentMethod,
+      });
       toast.warning(notice);
-      searchInputRef.current?.focus();
     } catch {
       const message = "Koneksi terputus dan antrean lokal gagal menyimpan.";
       setSubmitError(message);
@@ -474,6 +487,10 @@ export function PosWorkspace() {
         const message =
           json.error?.message ?? "Pesanan gagal dibuat. Coba lagi.";
         setSubmitError(message);
+        setOrderFeedback({
+          kind: "error",
+          message,
+        });
         toast.error(message);
 
         const errorCode = json.error?.code;
@@ -499,6 +516,9 @@ export function PosWorkspace() {
         );
       }
 
+      const itemCountSnapshot = cart.itemCount;
+      const paymentMethodSnapshot = cart.paymentMethod;
+
       cart.clearCart();
       setProofFile(null);
 
@@ -510,18 +530,34 @@ export function PosWorkspace() {
             orderNo: created.orderNo,
             file: attachedProof,
           });
+          setMobileCartOpen(false);
+          setOrderFeedback({
+            kind: "partial_proof",
+            orderNo: created.orderNo,
+            customerName,
+            itemCount: itemCountSnapshot,
+            total: created.total,
+            paymentMethod: paymentMethodSnapshot,
+          });
           toast.warning(
             `Pesanan #${created.orderNo} tersimpan, tetapi foto gagal diunggah. Coba lagi dari Riwayat.`
           );
-          searchInputRef.current?.focus();
           return;
         }
       }
 
       setRetryProof(null);
       setMobileCartOpen(false);
+      setOrderFeedback({
+        kind: "success",
+        orderNo: created.orderNo,
+        customerName,
+        itemCount: itemCountSnapshot,
+        total: created.total,
+        paymentMethod: paymentMethodSnapshot,
+        hasProof: Boolean(attachedProof),
+      });
       toast.success(`Pesanan #${created.orderNo} dikirim ke dapur`);
-      searchInputRef.current?.focus();
     } catch {
       await queueCurrentOrder(
         `Sinyal terputus. Pesanan ${customerName} disimpan di antrean offline.`
@@ -566,6 +602,19 @@ export function PosWorkspace() {
       if (uploaded) {
         toast.success(
           `Foto bukti Pesanan #${retryProof.orderNo} berhasil diunggah`
+        );
+        setOrderFeedback((prev) =>
+          prev && prev.kind === "partial_proof"
+            ? {
+                kind: "success",
+                orderNo: prev.orderNo,
+                customerName: prev.customerName,
+                itemCount: prev.itemCount,
+                total: prev.total,
+                paymentMethod: prev.paymentMethod,
+                hasProof: true,
+              }
+            : prev
         );
         setRetryProof(null);
       } else {
@@ -693,6 +742,17 @@ export function PosWorkspace() {
           if (!open) setVariantItem(null);
         }}
         onConfirm={handleConfirmVariants}
+      />
+
+      <OrderStatusDialog
+        feedback={orderFeedback}
+        retryingProof={retryingProof}
+        hasRetryProof={Boolean(retryProof)}
+        onRetryProof={() => void handleRetryProof()}
+        onClose={() => {
+          setOrderFeedback(null);
+          searchInputRef.current?.focus();
+        }}
       />
     </div>
   );

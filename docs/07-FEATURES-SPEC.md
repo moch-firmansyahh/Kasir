@@ -120,7 +120,8 @@ Urutan:
 2. Kirim `POST /api/orders`. Bila perangkat sedang offline atau terjadi kegagalan jaringan/`502–504`, pesanan (beserta foto opsional) otomatis disimpan ke antrean **IndexedDB** (`OfflineQueueBar`) dan keranjang dikosongkan agar kasir tetap bisa melayani pembeli berikutnya.
 3. Saat koneksi kembali (`online` event atau tombol **Kirim Sekarang**), antrean offline dikirim otomatis berurutan FIFO ke `POST /api/orders` + `POST /api/orders/[id]/proof`.
 4. Bila server menolak dengan `4xx` (validasi/menu tidak aktif) saat online, **keranjang tetap** (FR-POS-16) dan pesan error jelas tampil.
-5. Sukses → bila ada foto, kirim `POST /api/orders/[id]/proof`. Bila upload foto gagal → toast peringatan (H12).
+5. Sukses → bila ada foto, kirim `POST /api/orders/[id]/proof`. Bila upload foto gagal → tampil dialog/toast peringatan (H12).
+6. Setelah submit selesai, tampil dialog konfirmasi status (`OrderStatusDialog`: **Pesanan Berhasil**, **Pesanan Tersimpan (Foto Gagal)**, **Masuk Antrean Offline**, atau **Pesanan Gagal Dikirim**) agar kasir tahu pasti hasil pesanan sebelum fokus kembali ke pencarian menu.
 - Cegah klik ganda: tombol nonaktif + spinner selama proses; idempotensi sisi UI (satu request per klik).
 - Dukungan PWA Service Worker (`public/sw.js` + `app/manifest.ts`) & cache katalog menu (`localStorage`) menjaga halaman `/kasir` tetap dapat dibuka saat sinyal putus-nyambung.
 

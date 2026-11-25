@@ -11,13 +11,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { loadSettingsCache, saveSettingsCache } from "@/lib/offline/posCache";
 import type { ApiResponse, SettingsDTO } from "@/types/api";
 
 export default function KasirPengaturanPage() {
   const router = useRouter();
-  const [storeName, setStoreName] = useState("Cemal Cemul");
-  const [taxInput, setTaxInput] = useState("0");
-  const [loading, setLoading] = useState(true);
+  const [initialCache] = useState(() => loadSettingsCache());
+  const [storeName, setStoreName] = useState(
+    () => initialCache?.storeName ?? "Cemal Cemul"
+  );
+  const [taxInput, setTaxInput] = useState(() =>
+    initialCache ? String(initialCache.taxPercent) : "0"
+  );
+  const [loading, setLoading] = useState(() => !initialCache);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -27,6 +33,7 @@ export default function KasirPengaturanPage() {
     if (!res.ok || json.error) {
       throw new Error(json.error?.message ?? "Gagal memuat pengaturan.");
     }
+    saveSettingsCache(json.data);
     return json.data;
   }, []);
 
@@ -41,9 +48,11 @@ export default function KasirPengaturanPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(
-          err instanceof Error ? err.message : "Gagal memuat pengaturan."
-        );
+        if (!initialCache) {
+          setError(
+            err instanceof Error ? err.message : "Gagal memuat pengaturan."
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -51,7 +60,7 @@ export default function KasirPengaturanPage() {
     return () => {
       cancelled = true;
     };
-  }, [loadSettings]);
+  }, [initialCache, loadSettings]);
 
   async function handleRetry() {
     setLoading(true);
@@ -98,6 +107,7 @@ export default function KasirPengaturanPage() {
         return;
       }
 
+      saveSettingsCache(json.data);
       setStoreName(json.data.storeName);
       setTaxInput(String(json.data.taxPercent));
       toast.success("Pengaturan disimpan");

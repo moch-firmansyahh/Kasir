@@ -1,5 +1,5 @@
-const SHELL_CACHE = "cemal-cemul-shell-v1";
-const ASSET_CACHE = "cemal-cemul-assets-v1";
+const SHELL_CACHE = "cemal-cemul-shell-v2";
+const ASSET_CACHE = "cemal-cemul-assets-v2";
 
 const PRECACHE_URLS = [
   "/",

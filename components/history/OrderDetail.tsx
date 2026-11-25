@@ -121,7 +121,7 @@ export function OrderDetail({
             }}
           />
         ) : order ? (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pt-0.5">
             <div className="space-y-4 pb-4">
               <div className="rounded-xl border border-border bg-card p-3.5 text-sm space-y-1">
                 <div className="flex justify-between gap-2">
