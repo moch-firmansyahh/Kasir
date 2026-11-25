@@ -19,9 +19,32 @@ const baloo2 = Baloo_2({
   fallback: ["system-ui", "sans-serif"],
 });
 
+function getMetadataBase(): URL {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (siteUrl) return new URL(siteUrl);
+  const vercelProd = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (vercelProd) return new URL(`https://${vercelProd}`);
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl) return new URL(`https://${vercelUrl}`);
+  return new URL("http://localhost:3000");
+}
+
 export const metadata: Metadata = {
+  metadataBase: getMetadataBase(),
   title: "Cemal Cemul",
   description: "Aplikasi kasir dan layar dapur untuk Cemal Cemul",
+  openGraph: {
+    title: "Cemal Cemul",
+    description: "Aplikasi kasir dan layar dapur untuk Cemal Cemul",
+    siteName: "Cemal Cemul",
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cemal Cemul",
+    description: "Aplikasi kasir dan layar dapur untuk Cemal Cemul",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
